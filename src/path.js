@@ -5,30 +5,88 @@ var property = require('./property');
 var createPathData = require('./pathData');
 var applyTransformToContainer = require('./transform');
 
-function addPathToDrawables(shape, drawables, transforms, targets) {
+function addPathToDrawables(shape, shapeName, level, drawables, transforms, targets) {
 	var i, len = drawables.length;
-	var color, hexColor;
+	var color, hexColor, animatedProp;
 	for(i = 0; i < len; i += 1) {
 		color = drawables[i].drawable.c;
-		hexColor = rgbHex(color.k[0]*255,color.k[1]*255,color.k[2]*255);
 		var attributes = [];
 		var keyName = '';
+		var pathName = drawables[i].name + shapeName;
 		if(drawables[i].drawable.ty === 'st') {
-			attributes.push({
-				key: 'android:strokeColor',
-				value: '#' + hexColor
-			})
-			attributes.push({
+			if (color.a === 0) {
+				hexColor = rgbHex(color.k[0]*255,color.k[1]*255,color.k[2]*255);
+				attributes.push({
+					key: 'android:strokeColor',
+					value: '#' + hexColor
+				})
+			} else {
+				hexColor = rgbHex(color.k[0].s[0]*255,color.k[0].s[1]*255,color.k[0].s[2]*255)
+				attributes.push({
+					key: 'android:strokeColor',
+					value: '#' + hexColor
+				})
+				animatedProp = property.createAnimatedProperty(pathName, 'strokeColor', color.k);
+				targets.push(animatedProp);
+			}
+			
+			if(drawables[i].drawable.w.a === 0) {
+				attributes.push({
 				key: 'android:strokeWidth',
 				value: drawables[i].drawable.w.k
 			})
+			} else {
+				attributes.push({
+					key: 'android:strokeWidth',
+					value: drawables[i].drawable.w.k[0].s
+				})
+				animatedProp = property.createAnimatedProperty(pathName, 'strokeWidth', drawables[i].drawable.w.k);
+				targets.push(animatedProp);
+			}
+			if(drawables[i].drawable.o.a === 0) {
+				attributes.push({
+					key: 'android:strokeAlpha',
+					value: drawables[i].drawable.o.k * 0.01
+				})
+			} else {
+				attributes.push({
+					key: 'android:strokeAlpha',
+					value: drawables[i].drawable.o.k[0].s * 0.01
+				})
+				animatedProp = property.createAnimatedProperty(pathName, 'strokeAlpha', drawables[i].drawable.o.k);
+				targets.push(animatedProp);
+			}
+			
 		} else if(drawables[i].drawable.ty === 'fl') {
-			attributes.push({
-				key: 'android:fillColor',
-				value: '#' + hexColor
-			})
+			if (color.a === 0) {
+				hexColor = rgbHex(color.k[0]*255,color.k[1]*255,color.k[2]*255)
+				attributes.push({
+					key: 'android:fillColor',
+					value: '#' + hexColor
+				})
+			} else {
+				hexColor = rgbHex(color.k[0].s[0]*255,color.k[0].s[1]*255,color.k[0].s[2]*255)
+				attributes.push({
+					key: 'android:fillColor',
+					value: '#' + hexColor
+				})
+				animatedProp = property.createAnimatedProperty(pathName, 'fillColor', color.k);
+				targets.push(animatedProp);
+			}
+			if(drawables[i].drawable.o.a === 0) {
+				attributes.push({
+					key: 'android:fillAlpha',
+					value: drawables[i].drawable.o.k * 0.01
+				})
+			} else {
+				attributes.push({
+					key: 'android:fillAlpha',
+					value: drawables[i].drawable.o.k[0].s * 0.01
+				})
+				animatedProp = property.createAnimatedProperty(pathName, 'fillAlpha', drawables[i].drawable.o.k);
+				targets.push(animatedProp);
+			}
 		}
-		var pathName = drawables[i].name + 'path_';
 		var path = node.createNodeWithAttributes('path', attributes, pathName);
 		if (shape.ks.a === 0) {
 			node.addAttribute(path,'android:pathData', createPathData(shape.ks.k));
@@ -37,7 +95,18 @@ function addPathToDrawables(shape, drawables, transforms, targets) {
 			var animatedPath = property.createAnimatedProperty(pathName, 'pathData', shape.ks.k);
 			targets.push(animatedPath);
 		}
-		node.nestChild(drawables[i].group, path);
+		var drawableLevel = level;
+		var groupName = pathName;
+		var previousGroup = path;
+		while(drawableLevel > drawables[i].level) {
+			groupName += 'group_' + drawableLevel + '_';
+			var group = node.createNode('group', groupName);
+			var containerGroup = applyTransformToContainer(group, transforms[drawableLevel - 1].transform, targets, groupName);
+			node.nestChild(group, previousGroup);
+			previousGroup = containerGroup;
+			drawableLevel -= 1;
+		}
+		node.nestChild(drawables[i].group, previousGroup);
 	}
 }
 
@@ -65,13 +134,13 @@ function addShapesToGroup(container, shapes, drawables, transforms, level, targe
 			node.nestChild(container, group);
 			drawables.push({drawable:shapes[i], level: level, group: group, name: drawableName});
 		} else if(shapes[i].ty === 'sh') {
-			addPathToDrawables(shapes[i], drawables, transforms, targets);
+			var shapeName = 'shape_' + i + '_';
+			addPathToDrawables(shapes[i], shapeName, level, drawables, transforms, targets);
 		}
 	}
 	return container;
 }
 
 module.exports = {
-	addPathToDrawables: addPathToDrawables,
 	createShapeLayer: createShapeLayer
 }

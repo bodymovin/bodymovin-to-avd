@@ -1,5 +1,6 @@
 var node = require('./node');
 var createPathData = require('./pathData');
+var rgbHex = require('rgb-hex');
 
 function createAnimatedProperty(targetName, propertyType, keyframes) {
 	var target = createTargetNode(targetName);
@@ -31,11 +32,17 @@ function createAnimatedProperty(targetName, propertyType, keyframes) {
 			node.nestChild(set, objectAnimator);
 			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleY', {type:'multidimensional', index:1, interpolationType:'multidimensional', multiplier:0.01});
 			node.nestChild(set, objectAnimator);
-		} else if(propertyType === 'rotation') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'rotation', {type:'unidimensional', index:1, interpolationType:'unidimensional'});
+		} else if(propertyType === 'rotation' || propertyType === 'strokeWidth') {
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', index:1, interpolationType:'unidimensional'});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'pathData') {
 			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional'});
+			node.nestChild(set, objectAnimator);
+		} else if(propertyType === 'fillColor' || propertyType === 'strokeColor') {
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'color', interpolationType:'unidimensional'});
+			node.nestChild(set, objectAnimator);
+		} else if(propertyType === 'strokeAlpha' || propertyType === 'fillAlpha') {
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', interpolationType:'unidimensional', multiplier:0.01});
 			node.nestChild(set, objectAnimator);
 		}
 	}
@@ -120,6 +127,19 @@ function createTargetNode(nodeName) {
  		attributes.push({
  			key: 'android:valueType',
  			value: 'pathType'
+ 		})
+ 	} else if (options.type === 'color') {
+ 		attributes.push({
+ 			key: 'android:valueFrom',
+ 			value: '#' + rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
+ 		})
+ 		attributes.push({
+ 			key: 'android:valueTo',
+ 			value: '#' + rgbHex(initialValue.e[0]*255, initialValue.e[1]*255, initialValue.e[2]*255)
+ 		})
+ 		attributes.push({
+ 			key: 'android:valueType',
+ 			value: 'colorType'
  		})
  	}
  	var objectAnimator = node.createNodeWithAttributes('objectAnimator', attributes, '');
