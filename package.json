@@ -1,0 +1,23 @@
+{
+  "name": "bodymovin-to-avd",
+  "version": "1.0.0",
+  "description": "Bodymovin to AVD converter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bodymovin/bodymovin-to-avd.git"
+  },
+  "author": "Hernan Torrisi <hernantorrisi@gmail.com> (http://codepen.io/airnan/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bodymovin/bodymovin-to-avd/issues"
+  },
+  "homepage": "https://github.com/bodymovin/bodymovin-to-avd#readme",
+  "dependencies": {
+    "rgb-hex": "^2.1.0",
+    "xml": "^1.0.1"
+  }
+}
