@@ -112,33 +112,33 @@ function addPathToDrawables(shape, shapeName, level, drawables, transforms, targ
 
 function createShapeLayer(layerData, layers, targets, name) {
 	var group = node.createNode('group', name);
-	var containerGroup = applyTransformToContainer(group, layerData.ks, targets, name);
-	addShapesToGroup(group, layerData.shapes, [], [], 0, targets, name);
-	return containerGroup;
+	group = addShapesToGroup(group, layerData.shapes, [], [], 0, targets, name);
+	group = applyTransformToContainer(group, layerData.ks, targets, name);
+	return group;
 }
 
-function addShapesToGroup(container, shapes, drawables, transforms, level, targets, name) {
-	var i, len = shapes.length;
+function addShapesToGroup(parent, shapes, drawables, transforms, level, targets, name) {
+	var i, len = shapes.length, parentContainer = parent;
 	for (i = len - 1; i >= 0; i -= 1) {
 		if(shapes[i].ty === 'gr') {
 			var groupName = name + 'group_' + i + '_';
 			var group = node.createNode('group', groupName);
 			group = addShapesToGroup(group, shapes[i].it, array.cloneArray(drawables), array.cloneArray(transforms), level + 1, targets, groupName);
-			node.nestChild(container, group);
+			node.nestChild(parent, group);
 		} else if(shapes[i].ty === 'tr') {
-			container = applyTransformToContainer(container, shapes[i], targets, name);
+			parentContainer = applyTransformToContainer(parent, shapes[i], targets, name);
 			transforms.push({transform:shapes[i], level: level});
 		} else if(shapes[i].ty === 'fl' || shapes[i].ty === 'st') {
 			var drawableName = name + 'drawable_' + i + '_';
 			var group = node.createNode('group', drawableName);
-			node.nestChild(container, group);
+			node.nestChild(parent, group);
 			drawables.push({drawable:shapes[i], level: level, group: group, name: drawableName});
 		} else if(shapes[i].ty === 'sh') {
 			var shapeName = 'shape_' + i + '_';
 			addPathToDrawables(shapes[i], shapeName, level, drawables, transforms, targets);
 		}
 	}
-	return container;
+	return parentContainer;
 }
 
 module.exports = {
