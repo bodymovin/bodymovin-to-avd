@@ -2,7 +2,7 @@ var node = require('./node');
 var createPathData = require('./pathData');
 var rgbHex = require('rgb-hex');
 
-function createAnimatedProperty(targetName, propertyType, keyframes) {
+function createAnimatedProperty(targetName, propertyType, keyframes, timeOffset) {
 	var target = createTargetNode(targetName);
 	var aapt = createAAPTAnimation();
 	node.nestChild(target, aapt);
@@ -15,34 +15,35 @@ function createAnimatedProperty(targetName, propertyType, keyframes) {
 		keyframes.splice(0,0,extraKeyframe);
 	}
 	var i, len = keyframes.length;
-	var objectAnimator;
+	var objectAnimator, multiplier;
 	for( i = 1; i < len; i += 1) {
 		if(propertyType === 'position') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional'});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional'});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'anchor') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', multiplier:-1});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', multiplier:-1});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'scale') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleX', {type:'multidimensional', index:0, interpolationType:'multidimensional', multiplier:0.01});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleX', {type:'multidimensional', index:0, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleY', {type:'multidimensional', index:1, interpolationType:'multidimensional', multiplier:0.01});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleY', {type:'multidimensional', index:1, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'rotation' || propertyType === 'strokeWidth') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', index:1, interpolationType:'unidimensional'});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'pathData') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional'});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'fillColor' || propertyType === 'strokeColor') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'color', interpolationType:'unidimensional'});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'color', interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-		} else if(propertyType === 'strokeAlpha' || propertyType === 'fillAlpha') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', interpolationType:'unidimensional', multiplier:0.01});
+		} else if(propertyType === 'strokeAlpha' || propertyType === 'fillAlpha' || propertyType === 'trimPathEnd' || propertyType === 'trimPathStart' || propertyType === 'trimPathOffset') {
+			multiplier = propertyType === 'trimPathOffset' ? 1/360 : 0.01;
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', interpolationType:'unidimensional', multiplier:multiplier, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		}
 	}
@@ -76,6 +77,7 @@ function createTargetNode(nodeName) {
 
  function createAnimatorObject(initialValue, finalValue, propertyName, options) {
  	options.multiplier = options.multiplier || 1;
+ 	options.timeOffset = options.timeOffset || 0;
  	var attributes = [{
  		key: 'android:propertyName',
  		value: propertyName
@@ -86,17 +88,25 @@ function createTargetNode(nodeName) {
  	},
  	{
  		key: 'android:startOffset',
- 		value: initialValue.t
+ 		value: initialValue.t + options.timeOffset
  	}];
  	if (options.type === 'multidimensional') {
  		attributes.push({
  			key: 'android:valueFrom',
  			value: initialValue.s[options.index] * options.multiplier
  		})
- 		attributes.push({
- 			key: 'android:valueTo',
- 			value: initialValue.e[options.index] * options.multiplier
- 		})
+
+ 		if(initialValue.h === 1) {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: initialValue.s[options.index] * options.multiplier
+	 		})
+ 		} else {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: initialValue.e[options.index] * options.multiplier
+	 		})
+ 		}
  		attributes.push({
  			key: 'android:valueType',
  			value: 'floatType'
@@ -107,10 +117,17 @@ function createTargetNode(nodeName) {
  			key: 'android:valueFrom',
  			value: initialValue.s * options.multiplier
  		})
- 		attributes.push({
- 			key: 'android:valueTo',
- 			value: initialValue.e * options.multiplier
- 		})
+ 		if(initialValue.h === 1) {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: initialValue.s * options.multiplier
+	 		})
+ 		} else {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: initialValue.e * options.multiplier
+	 		})
+ 		}
  		attributes.push({
  			key: 'android:valueType',
  			value: 'floatType'
@@ -120,10 +137,17 @@ function createTargetNode(nodeName) {
  			key: 'android:valueFrom',
  			value: createPathData(initialValue.s[0])
  		})
- 		attributes.push({
- 			key: 'android:valueTo',
- 			value: createPathData(initialValue.e[0])
- 		})
+ 		if(initialValue.h === 1) {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: createPathData(initialValue.s[0])
+	 		})
+ 		} else {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: createPathData(initialValue.e[0])
+	 		})
+ 		}
  		attributes.push({
  			key: 'android:valueType',
  			value: 'pathType'
@@ -133,18 +157,27 @@ function createTargetNode(nodeName) {
  			key: 'android:valueFrom',
  			value: '#' + rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
  		})
- 		attributes.push({
- 			key: 'android:valueTo',
- 			value: '#' + rgbHex(initialValue.e[0]*255, initialValue.e[1]*255, initialValue.e[2]*255)
- 		})
+ 		if(initialValue.h === 1) {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: '#' + rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
+	 		})
+ 		} else {
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: '#' + rgbHex(initialValue.e[0]*255, initialValue.e[1]*255, initialValue.e[2]*255)
+	 		})
+ 		}
  		attributes.push({
  			key: 'android:valueType',
  			value: 'colorType'
  		})
  	}
  	var objectAnimator = node.createNodeWithAttributes('objectAnimator', attributes, '');
- 	var interpolator = buildInterpolator(initialValue, finalValue, options);
- 	node.nestChild(objectAnimator, interpolator);
+ 	if(initialValue.h !== 1) {
+	 	var interpolator = buildInterpolator(initialValue, finalValue, options);
+	 	node.nestChild(objectAnimator, interpolator);
+ 	}
  	return objectAnimator;
  }
 
@@ -160,16 +193,16 @@ function buildInterpolator(initialValue, finalValue, options) {
 		ox = initialValue.o.x;
 		oy = initialValue.o.y;
 		ix = initialValue.i.x;
-		oy = initialValue.i.y;
+		iy = initialValue.i.y;
 	} else if(options.interpolationType === 'multidimensional') {
 		ox = initialValue.o.x[options.index];
 		oy = initialValue.o.y[options.index];
 		ix = initialValue.i.x[options.index];
-		oy = initialValue.i.y[options.index];
+		iy = initialValue.i.y[options.index];
 
 	}
 	interpolationValue += ' c' + ox + ',' + oy;
-	interpolationValue += ' ' + ix + ',' + oy;
+	interpolationValue += ' ' + ix + ',' + iy;
 	interpolationValue += ' 1.0,1.0';
 	var pathAttributes = [{
 		key: 'android:pathData',
@@ -181,5 +214,9 @@ function buildInterpolator(initialValue, finalValue, options) {
 }
 
  module.exports = {
- 	createAnimatedProperty: createAnimatedProperty
+ 	createAnimatedProperty: createAnimatedProperty,
+ 	createAnimatorObject: createAnimatorObject,
+ 	createAAPTAnimation: createAAPTAnimation,
+ 	createTargetNode: createTargetNode,
+ 	createSetNode: createSetNode
  }

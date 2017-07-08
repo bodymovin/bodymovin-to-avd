@@ -29,7 +29,7 @@ function createAnimatedVectorObject() {
 function createAAPTVectorDrawable(animation, targets) {
 	var aapt = node.createNodeWithAttributes('aapt:attr',[{key:'name', value:'android:drawable'}]);
 	var vectorDrawable = createVectorDrawable(animation.w, animation.h);
-	layer.addLayers(vectorDrawable, animation.layers, animation.assets, targets, 'root_');
+	layer.addLayers(vectorDrawable, animation.layers, animation, targets, 'root_', 0);
 	node.nestChild(aapt, vectorDrawable);
 	return aapt;
 }
@@ -45,10 +45,10 @@ function correctTargetsTimes(targets, framerate) {
 		for(j = 1; j < jLen; j += 1) {
 			animator = set[j]['objectAnimator'];
 			if(animator[0]._attr['android:duration']) {
-				animator[0]._attr['android:duration'] = Math.round(animator[0]._attr['android:duration']*framerate);
+				animator[0]._attr['android:duration'] = Math.round(animator[0]._attr['android:duration']/framerate*1000);
 			}
-			if(animator[0]._attr['android:duration']) {
-				animator[0]._attr['android:startOffset'] = Math.round(animator[0]._attr['android:startOffset']*framerate);
+			if(animator[0]._attr['android:startOffset']) {
+				animator[0]._attr['android:startOffset'] = Math.round(animator[0]._attr['android:startOffset']/framerate*1000);
 			}
 		}
 	} 
