@@ -46,7 +46,7 @@ function correctTargetsTimes(targets, framerate) {
 		setChildren = node.getChildren(set);
 		jLen = setChildren.length;
 		for(j = 1; j < jLen; j += 1) {
-			animator = setChildren[j]['objectAnimator'];
+			animator = setChildren[j];
 			duration = node.getAttribute(animator, 'android:duration');
 			startOffset = node.getAttribute(animator, 'android:startOffset');
 			if(duration) {
@@ -89,7 +89,7 @@ function createVectorDrawable(width, height) {
  	node.nestChild(avd, vectorDrawable);
  	correctTargetsTimes(targets, animation.fr);
  	addTargetsToAVD(targets, avd);
- 	console.log(JSON.stringify(avd));
+ 	//console.log(JSON.stringify(avd));
  	var xmlString = xml(avd);
  	return xmlString;
  };
