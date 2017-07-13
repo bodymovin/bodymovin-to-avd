@@ -37,18 +37,23 @@ function createAAPTVectorDrawable(animation, targets) {
 function correctTargetsTimes(targets, framerate) {
 	var i, len = targets.length;
 	var j, jLen;
-	var target, set, animator;
+	var target, aapt_attr, set, setChildren, animator;
+	var duration, startOffset;
 	for(i = 0; i < len; i += 1) {
 		target = targets[i];
-		set = target.target[1]["aapt:attr"][1]["set"];
-		jLen = set.length;
+		aapt_attr = node.getChild(target, 'aapt:attr');
+		set = node.getChild(aapt_attr, 'set');
+		setChildren = node.getChildren(set);
+		jLen = setChildren.length;
 		for(j = 1; j < jLen; j += 1) {
-			animator = set[j]['objectAnimator'];
-			if(animator[0]._attr['android:duration']) {
-				animator[0]._attr['android:duration'] = Math.round(animator[0]._attr['android:duration']/framerate*1000);
+			animator = setChildren[j]['objectAnimator'];
+			duration = node.getAttribute(animator, 'android:duration');
+			startOffset = node.getAttribute(animator, 'android:startOffset');
+			if(duration) {
+				node.addAttribute(animator, 'android:duration', Math.round(duration/framerate*1000));
 			}
-			if(animator[0]._attr['android:startOffset']) {
-				animator[0]._attr['android:startOffset'] = Math.round(animator[0]._attr['android:startOffset']/framerate*1000);
+			if(startOffset) {
+				node.addAttribute(animator, 'android:startOffset', Math.round(startOffset/framerate*1000));
 			}
 		}
 	} 
@@ -84,6 +89,7 @@ function createVectorDrawable(width, height) {
  	node.nestChild(avd, vectorDrawable);
  	correctTargetsTimes(targets, animation.fr);
  	addTargetsToAVD(targets, avd);
+ 	//console.log(JSON.stringify(avd));
  	var xmlString = xml(avd);
  	return xmlString;
  };

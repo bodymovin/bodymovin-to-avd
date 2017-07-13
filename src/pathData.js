@@ -18,7 +18,7 @@ function createPathData(data) {
 }
 
 function roundValue(val) {
-	return Math.round(val*1000)/1000;
+	return Math.round(val*100)/100;
 }
 
 module.exports = createPathData;
