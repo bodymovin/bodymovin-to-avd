@@ -62,10 +62,10 @@ function correctTargetsTimes(targets, framerate) {
 function createVectorDrawable(width, height) {
 	var attributes = [{
 		key: 'android:height',
-		value: '240dp'
+		value: height + 'dp'
 	},{
 		key: 'android:width',
-		value: '240dp'
+		value: width + 'dp'
 	},{
 		key: 'android:viewportHeight',
 		value: height
