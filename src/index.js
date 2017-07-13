@@ -89,7 +89,7 @@ function createVectorDrawable(width, height) {
  	node.nestChild(avd, vectorDrawable);
  	correctTargetsTimes(targets, animation.fr);
  	addTargetsToAVD(targets, avd);
- 	//console.log(JSON.stringify(avd));
+ 	console.log(JSON.stringify(avd));
  	var xmlString = xml(avd);
  	return xmlString;
  };
