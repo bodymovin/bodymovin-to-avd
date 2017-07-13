@@ -3,13 +3,46 @@ var property = require('./property');
 
 function applyTransformToContainer(container, transform, targets, timeOffset) {
 	var name = node.getAttribute(container, 'android:name');
-	if(transform.s.a === 0 && transform.r.a === 0 && transform.p.a === 0 && transform.a.a === 0
-		&& transform.s.k[0] === 100 && transform.s.k[1] === 100	&& transform.r.k === 0) {
+	if(transform.p.a === 0 && transform.a.a === 0) {
 			if(transform.p.k[0] - transform.a.k[0] !== 0) {
 				node.addAttribute(container,'android:translateX', transform.p.k[0] - transform.a.k[0]);
 			}
 			if(transform.p.k[1] - transform.a.k[1] !== 0) {
 				node.addAttribute(container,'android:translateY', transform.p.k[1] - transform.a.k[1]);
+			}
+			if(transform.r.a === 1 || transform.r.k !== 0 || transform.s.a === 1 || transform.s.k[0] !== 100 || transform.s.k[1] !== 100) {
+				if(transform.a.k[0] !== 0) {
+					node.addAttribute(container,'android:pivotX', transform.a.k[0]);
+				}
+				if(transform.a.k[1] !== 0) {
+					node.addAttribute(container,'android:pivotY', transform.a.k[1]);
+				}
+				if(transform.r.a === 1 || transform.r.k !== 0) {
+					if(transform.r.a === 0) {
+						if(transform.r.k !== 0) {
+							node.addAttribute(container,'android:rotation', transform.r.k);
+						}
+					} else {
+						node.addAttribute(container,'android:rotation', transform.r.k[0].s);
+						var animatedProperty = property.createAnimatedProperty(name, 'rotation', transform.r.k, timeOffset);
+						targets.push(animatedProperty);
+					}
+				}
+				if(transform.s.a === 1 || transform.s.k[0] !== 100 || transform.s.k[1] !== 100) {
+					if(transform.s.a === 0) {
+						if(transform.s.k[0] !== 100) {
+							node.addAttribute(container,'android:scaleX', transform.s.k[0]/100);
+						}
+						if(transform.s.k[1] !== 100) {
+							node.addAttribute(container,'android:scaleY', transform.s.k[1]/100);
+						}
+					}else {
+						node.addAttribute(container,'android:scaleX', transform.s.k[0].s[0]/100);
+						node.addAttribute(container,'android:scaleY', transform.s.k[0].s[1]/100);
+						var animatedProperty = property.createAnimatedProperty(name, 'scale', transform.s.k, timeOffset);
+						targets.push(animatedProperty);
+					}
+				}
 			}
 	} else {
 		if(transform.a.a !== 0 || transform.a.k[0] !== 0 || transform.a.k[1] !== 0) {
