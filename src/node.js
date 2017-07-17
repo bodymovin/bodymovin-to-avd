@@ -56,6 +56,7 @@
  	if(isArray(children)){
 	 	var i =0, len = children.length;
 	 	while(i < len) {
+			//console.log('children[i]._attr:',  children[i]._attr)
 	 		if(children[i]._attr && children[i]._attr[key]) {
 	 			return children[i]._attr[key];
 	 		}

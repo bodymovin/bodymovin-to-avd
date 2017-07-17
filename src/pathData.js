@@ -1,19 +1,36 @@
-function createPathData(data) {
+var Matrix = require('transformatrix');
+
+var _matrix = new Matrix();
+
+function createPathData(data, matrix) {
+	if(!matrix) {
+		matrix = _matrix;
+	}
 	var i, len = data.v.length;
 	var pathValue = '';
+	var pt;
 	for( i = 0; i < len - 1; i += 1) {
 		if(i === 0) {
-			pathValue += 'M' + roundValue(data.v[0][0]) + ' ' + roundValue(data.v[0][1]);
+			pt = matrix.transformPoint(data.v[0][0], data.v[0][1]);
+			pathValue += 'M' + roundValue(pt[0]) + ' ' + roundValue(pt[1]);
 		}
-		pathValue += ' C' + roundValue(data.o[i][0] + data.v[i][0]) + ',' + roundValue(data.o[i][1] + data.v[i][1]);
-		pathValue += ' ' + roundValue(data.i[i + 1][0] + data.v[i + 1][0]) + ',' + roundValue(data.i[i + 1][1] + data.v[i + 1][1]);
-		pathValue += ' ' + roundValue(data.v[i + 1][0]) + ',' + roundValue(data.v[i + 1][1]);
+		pt = matrix.transformPoint(data.o[i][0] + data.v[i][0], data.o[i][1] + data.v[i][1]);
+		pathValue += ' C' + roundValue(pt[0]) + ',' + roundValue(pt[1]);
+		pt = matrix.transformPoint(data.i[i + 1][0] + data.v[i + 1][0], data.i[i + 1][1] + data.v[i + 1][1]);
+		pathValue += ' ' + roundValue(pt[0]) + ',' + roundValue(pt[1]);
+		pt = matrix.transformPoint(data.v[i + 1][0], data.v[i + 1][1]);
+		pathValue += ' ' + roundValue(pt[0]) + ',' + roundValue(pt[1]);
 	}
 	if(data.c) {
-		pathValue += ' C' + roundValue(data.o[i][0] + data.v[i][0]) + ',' + roundValue(data.o[i][1] + data.v[i][1]);
-		pathValue += ' ' + roundValue(data.i[0][0] + data.v[0][0]) + ',' + roundValue(data.i[0][1] + data.v[0][1]);
-		pathValue += ' ' + roundValue(data.v[0][0]) + ',' + roundValue(data.v[0][1]);
+		pt = matrix.transformPoint(data.o[i][0] + data.v[i][0], data.o[i][1] + data.v[i][1]);
+		pathValue += ' C' + roundValue(pt[0]) + ',' + roundValue(pt[1]);
+		pt = matrix.transformPoint(data.i[0][0] + data.v[0][0], data.i[0][1] + data.v[0][1]);
+		pathValue += ' ' + roundValue(pt[0]) + ',' + roundValue(pt[1]);
+		pt = matrix.transformPoint(data.v[0][0], data.v[0][1]);
+		pathValue += ' ' + roundValue(pt[0]) + ',' + roundValue(pt[1]);
+		pathValue += 'c';
 	}
+	pathValue += ' ';
 	return pathValue;
 }
 

@@ -4,6 +4,7 @@ var xml = require('xml');
 var fs = require('fs');
 var node = require('./node');
 var layer = require('./layer');
+var avdFactory = require('./avd/avd');
 
 function addTargetsToAVD(targets, avd) {
 	var target;
@@ -83,13 +84,34 @@ function createVectorDrawable(width, height) {
  * @return {string}
  */
  module.exports = function(animation) {
- 	var targets = [];
- 	var avd = createAnimatedVectorObject();
- 	var vectorDrawable = createAAPTVectorDrawable(animation, targets);
- 	node.nestChild(avd, vectorDrawable);
- 	correctTargetsTimes(targets, animation.fr);
- 	addTargetsToAVD(targets, avd);
- 	//console.log(JSON.stringify(avd));
- 	var xmlString = xml(avd);
- 	return xmlString;
+ 	return new Promise(function(resolve, reject){
+ 		var targets = [];
+	 	//
+	 	var _avd = avdFactory();
+	 	_avd.processAnimation(animation)
+	 	.then(_avd.exportNode)
+	 	.then(function(avdNode){
+	 		fs.writeFile("./test.json", JSON.stringify(avdNode), function(err) {
+	 			if(err) {
+	 				return console.log(err);
+	 			}
+	 			var xmlString = xml(avdNode, ' ');
+	 			resolve(xmlString);
+
+	 			console.log("The file was saved!");
+	 		}); 
+
+	 	}).catch(function(err){
+	 		console.log(err.stack)
+	 		reject(err.stack);
+	 	});
+	 	//
+	 	/*var avd = createAnimatedVectorObject();
+	 	var vectorDrawable = createAAPTVectorDrawable(animation, targets);
+	 	node.nestChild(avd, vectorDrawable);
+	 	correctTargetsTimes(targets, animation.fr);
+	 	addTargetsToAVD(targets, avd);
+	 	var xmlString = xml(avd);
+	 	resolve(xmlString);*/
+	 })
  };
