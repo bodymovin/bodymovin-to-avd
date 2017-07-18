@@ -69,7 +69,7 @@ function avd(_animationData) {
 			_composition = compositionFactory(_animationData, _animationData.assets);
 			_composition.setFrameRate(_animationData.fr);
 			_composition.setTimeOffset(0);
-			_composition.traverseLayers();
+			_composition.processData();
 			resolve();
 		})
 		return promise;

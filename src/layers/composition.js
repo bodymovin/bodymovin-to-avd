@@ -12,10 +12,11 @@ function composition(compositionData, assets) {
 		outPoint: compositionData.op || 0,
 		startPoint: compositionData.st || 0,
 		layersData: compositionData.layers ||  getCompositionLayers(compositionData.refId, assets),
+		layerData: compositionData
 		layers: []
 	}
 
-	function getCompositionLayers(compId, assets) {
+	function getCompositionLayers(compId, assets, layers) {
 		var i = 0, len = assets.length;
 		while (i < len) {
 			if(assets[i].id === compId) {
@@ -33,31 +34,30 @@ function composition(compositionData, assets) {
 		for (i = 0; i < len; i += 1) {
 			node.nestChild(gr, layers[i].exportNode(name + '_layer_' + i));
 		}
+		factoryInstance.buildParenting();
 		return gr;
 	}
 
-	function traverseLayers() {
+	function processData() {
 		var i, len = state.layersData.length;
 		var layer;
 		for(i = 0; i < len; i += 1) {
 			if(state.layersData[i].ty === 4) {
 				layer = shapeFactory(state.layersData[i]);
-				layer.setTimeOffset(state.timeOffset + state.startPoint);
-				layer.setFrameRate(state.frameRate);
-				layer.traverseShapes();
 			} else if(state.layersData[i].ty === 0) {
 				layer = composition(state.layersData[i], assets);
-				layer.setTimeOffset(state.timeOffset + state.startPoint);
-				layer.setFrameRate(state.frameRate);
-				layer.traverseLayers();
 			}
+			layer.setTimeOffset(state.timeOffset + state.startPoint);
+			layer.setFrameRate(state.frameRate);
+			layer.setSiblings(state.layersData);
+			layer.processData();
 			state.layers.push(layer);
 		}
 	}
 
 	var factoryInstance = {
 		exportNode: exportNode,
-		traverseLayers: traverseLayers
+		processData: processData
 	};
 	Object.assign(factoryInstance, layer(state), masker(state), transformer(state)); 
 

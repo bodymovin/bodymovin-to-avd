@@ -12,7 +12,8 @@ function shape(layerData, _level) {
 	var trimPath;
 
 	var state = {
-		shapes: layerData.shapes || layerData.it
+		shapes: layerData.shapes || layerData.it,
+		layerData: layerData
 	}
 
 	function exportNode(name) {
@@ -28,6 +29,7 @@ function shape(layerData, _level) {
 				node.nestChild(gr, drawableNodes[j]);
 			}
 		}
+		factoryInstance.buildParenting();
 		return gr;
 	}
 
@@ -38,7 +40,7 @@ function shape(layerData, _level) {
 		}
 	}
 
-	function traverseShapes() {
+	function processData() {
 		var i,  len = state.shapes.length;
 		var shapeGroup, drawable;
 		var localDrawables = [];
@@ -50,7 +52,7 @@ function shape(layerData, _level) {
 				shapeGroup.setDrawables(drawables)
 				.setTransforms(transforms)
 				.setTrimPath(trimPath)
-				.traverseShapes();
+				.processData();
 			} else if(state.shapes[i].ty === 'fl' || state.shapes[i].ty === 'st') {
 				drawable = drawableFactory(state.shapes[i], level, state.timeOffset, state.frameRate);
 				drawables.push(drawable);
@@ -96,7 +98,7 @@ function shape(layerData, _level) {
 		setDrawables: setDrawables,
 		setTransforms: setTransforms,
 		setTrimPath: setTrimPath,
-		traverseShapes: traverseShapes,
+		processData: processData,
 		exportNode: exportNode
 	};
 	Object.assign(factoryInstance, layer(state), masker(state), transformer(state)); 
