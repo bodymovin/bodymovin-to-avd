@@ -30,7 +30,7 @@ function shape(layerData, _level) {
 				node.nestChild(gr, drawableNodes[j]);
 			}
 		}
-		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, groupName, false);
+		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, groupName, true);
 		return parentNode;
 	}
 
