@@ -1,3 +1,7 @@
+var node = require ('../node');
+var naming = require ('../naming');
+var applyTransformToContainer = require ('../transform');
+var createTransformGroup = require ('../helpers/transform/createTransformGroup');
 
 function transformer(state) {
 	var transforms = [];
@@ -17,7 +21,7 @@ function transformer(state) {
 		state.siblings = _siblings;
 	}
 
-	function getLayerDataByIndex() {
+	function getLayerDataByIndex(index) {
 		var siblings = state.siblings;
 		var i = 0, len = siblings.length;
 		while( i < len) {
@@ -28,15 +32,27 @@ function transformer(state) {
 		}
 	}
 
-	function buildParenting(group, parent, layers) {
-		var name = node.getAttribute(group, 'android:name');
+	function buildParenting(parent, group, name, useContainerFlag) {
 		if(parent !== undefined) {
-			name = name + 'parent_' + parent + '_';
-			var parentGroup = node.createNode('group', name);
-			var parentData = getLayerDataByIndex(parent, layers);
-			var containerParentGroup = applyTransformToContainer(parentGroup, parentData.ks, targets, state.timeOffset);
+			name = name + naming.PARENT_NAME + '_' + parent;
+			//var parentGroup = node.createNode('group', name);
+
+			var parentData = getLayerDataByIndex(parent);
+			var nestedArray;
+			if (useContainerFlag) {
+				nestedArray = createTransformGroup(name, parentData.ks, state.timeOffset, state.frameRate, group);
+			} else {
+				nestedArray = [group].concat(createTransformGroup(name, parentData.ks, state.timeOffset, state.frameRate, null));
+			}
+			var containerParentGroup = node.nestArray(nestedArray);
+			containerParentGroup = buildParenting(parentData.parent, containerParentGroup, name, false);
+
+
+
+			/*var parentData = getLayerDataByIndex(parent);
+			var containerParentGroup = applyTransformToContainer(parentGroup, parentData.ks, state.timeOffset, state.frameRate);
 			node.nestChild(parentGroup, group);
-			containerParentGroup = buildParenting(containerParentGroup, parentData.parent, layers, targets, state.timeOffset);
+			containerParentGroup = buildParenting(containerParentGroup, parentData.parent, null);*/
 			return containerParentGroup;
 		}
 		return group;

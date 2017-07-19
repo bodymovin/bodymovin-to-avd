@@ -1,10 +1,11 @@
 var node = require ('../../node');
 var property = require ('../../property');
 var targets = require ('../../targets/targets');
-var transformElement = require ('../../transform');
+var createTransformGroup = require ('../../helpers/transform/createTransformGroup');
 var rgbHex = require('rgb-hex');
 var Matrix = require('transformatrix');
 var createPathData = require('../../pathData');
+var naming = require('../../naming');
 
 var matrix = new Matrix();
 var degToRads = Math.PI/180;
@@ -149,7 +150,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		var pathAttributes = [].concat(getDrawingAttributes());
 		var pathNode = node.createNodeWithAttributes('path', pathAttributes, pathName);
 		var finalNode = pathNode;
-		var groupNode, nestedGroupNode;
+		var groupNode, nestedGroupNode, nestedArray;
 		var i, len = pathList.length;
 		var j, jLen;
 		matrix.reset();
@@ -164,10 +165,14 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 
 			if(!canFlattenPath(transforms, jLen)){
 				for(j = jLen - 1; j >= 0; j -= 1) {
-					parentGroupNode = node.createNode('group', pathName + '_gr_' + j);
-					groupNode = transformElement(parentGroupNode, transforms[j], timeOffset, frameRate);
-					node.nestChild(parentGroupNode, finalNode);
-					finalNode = groupNode;
+					nestedArray = [finalNode].concat(createTransformGroup(pathName + naming.GROUP_NAME +'_' + j, transforms[j], timeOffset, frameRate));
+					finalNode = node.nestArray(nestedArray);
+					var name = node.getAttribute(finalNode, 'android:name');
+
+					//parentGroupNode = node.createNode('group', pathName + '_gr_' + j);
+					//groupNode = createTransformGroup(parentGroupNode, transforms[j], timeOffset, frameRate);
+					//node.nestChild(parentGroupNode, finalNode);
+					//finalNode = groupNode;
 				}
 			} else {
 				for(j = 0; j < jLen; j += 1) {
@@ -222,7 +227,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					hasAnimatedPath = true;
 				}
 			} else {
-				pathName = name + '_path_' + pathCount;
+				pathName = name + naming.PATH_NAME + '_' + pathCount;
 				nodeElem = buildNewPath(currentPathList, pathName);
 				drawableNodes.push(nodeElem);
 				currentPathList.length = 0;
@@ -232,7 +237,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 			currentPathList.push(pathData);
 		}
 		if (currentPathList.length) {
-			pathName = name + '_path_' + pathCount;
+			pathName = name + naming.PATH_NAME + '_' + pathCount;
 			nodeElem = buildNewPath(currentPathList, pathName);
 			drawableNodes.push(nodeElem);
 		}

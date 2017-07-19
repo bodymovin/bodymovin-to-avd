@@ -130,6 +130,14 @@ function getChildren(nodeElem) {
  	}
  }
 
+ function nestArray(array) {
+ 	var i, len = array.length;
+ 	for(i = 1; i < len; i += 1) {
+ 		nestChild(array[i],array[i - 1]);
+ 	}
+ 	return array[array.length - 1];
+ }
+
  module.exports = {
  	createNode: createNode,
  	createNodeWithAttributes: createNodeWithAttributes,
@@ -137,6 +145,7 @@ function getChildren(nodeElem) {
  	getTagName: getTagName,
  	getAttribute: getAttribute,
  	nestChild: nestChild,
+ 	nestArray: nestArray,
  	getChild: getChild,
  	getChildren: getChildren,
  	cloneNode: cloneNode

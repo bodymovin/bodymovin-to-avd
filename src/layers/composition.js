@@ -1,18 +1,20 @@
-var grouper = require ('./grouper')
-var masker = require ('./masker')
-var transformer = require ('./transformer')
-var layer = require ('./layer')
-var node = require ('../node')
-var shapeFactory = require ('../layers/shape/shape')
+var grouper = require ('./grouper');
+var masker = require ('./masker');
+var transformer = require ('./transformer');
+var layer = require ('./layer');
+var node = require ('../node');
+var shapeFactory = require ('../layers/shape/shape');
+var naming = require('../naming');
 
 function composition(compositionData, assets) {
+
+	var compLayersData = compositionData.layers ||  getCompositionLayers(compositionData.refId, assets);
 
 	var state = {
 		inPoint: compositionData.ip || 0,
 		outPoint: compositionData.op || 0,
 		startPoint: compositionData.st || 0,
-		layersData: compositionData.layers ||  getCompositionLayers(compositionData.refId, assets),
-		layerData: compositionData
+		layerData: compositionData,
 		layers: []
 	}
 
@@ -29,29 +31,33 @@ function composition(compositionData, assets) {
 
 	function exportNode(name) {
 		var gr = node.createNode('group', name);
+		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, name, true);
 		var layers = state.layers;
 		var len = layers.length;
 		for (i = 0; i < len; i += 1) {
-			node.nestChild(gr, layers[i].exportNode(name + '_layer_' + i));
+			node.nestChild(gr, layers[i].exportNode(name + naming.LAYER_NAME + '_' + i));
 		}
-		factoryInstance.buildParenting();
-		return gr;
+		return parentNode;
 	}
 
 	function processData() {
-		var i, len = state.layersData.length;
+		var i, len = compLayersData.length;
 		var layer;
 		for(i = 0; i < len; i += 1) {
-			if(state.layersData[i].ty === 4) {
-				layer = shapeFactory(state.layersData[i]);
-			} else if(state.layersData[i].ty === 0) {
-				layer = composition(state.layersData[i], assets);
+			if(compLayersData[i].ty === 4) {
+				layer = shapeFactory(compLayersData[i]);
+			} else if(compLayersData[i].ty === 0) {
+				layer = composition(compLayersData[i], assets);
+			} else {
+				layer = null;
 			}
-			layer.setTimeOffset(state.timeOffset + state.startPoint);
-			layer.setFrameRate(state.frameRate);
-			layer.setSiblings(state.layersData);
-			layer.processData();
-			state.layers.push(layer);
+			if(layer){
+				layer.setTimeOffset(state.timeOffset + state.startPoint);
+				layer.setFrameRate(state.frameRate);
+				layer.setSiblings(compLayersData);
+				layer.processData();
+				state.layers.push(layer);
+			}
 		}
 	}
 

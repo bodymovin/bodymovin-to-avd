@@ -1,8 +1,9 @@
-var masker = require ('../masker')
-var transformer = require ('../transformer')
-var layer = require ('../layer')
-var drawableFactory = require ('./drawable')
-var node = require ('../../node')
+var masker = require ('../masker');
+var transformer = require ('../transformer');
+var layer = require ('../layer');
+var drawableFactory = require ('./drawable');
+var node = require ('../../node');
+var naming = require('../../naming');
 
 function shape(layerData, _level) {
 
@@ -17,7 +18,7 @@ function shape(layerData, _level) {
 	}
 
 	function exportNode(name) {
-		var groupName = name + '_drawable';
+		var groupName = name + naming.DRAWABLE_NAME;
 		var gr = node.createNode('group', groupName);
 		var drawableNodes;
 		var i, len = drawables.length;
@@ -29,8 +30,8 @@ function shape(layerData, _level) {
 				node.nestChild(gr, drawableNodes[j]);
 			}
 		}
-		factoryInstance.buildParenting();
-		return gr;
+		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, groupName, false);
+		return parentNode;
 	}
 
 	function addPathToDrawables(path) {

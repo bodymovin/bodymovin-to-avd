@@ -1,6 +1,7 @@
-var compositionFactory = require ('../layers/composition')
-var node = require ('../node')
-var targets = require ('../targets/targets')
+var compositionFactory = require ('../layers/composition');
+var node = require ('../node');
+var naming = require ('../naming');
+var targets = require ('../targets/targets');
 
 function avd(_animationData) {
 
@@ -51,7 +52,7 @@ function avd(_animationData) {
 			var vectorElem = createVectorDrawable(animationData.w, animationData.h);
 			node.nestChild(aaptVectorElem, vectorElem);
 			node.nestChild(avdElem, aaptVectorElem);
-			node.nestChild(vectorElem, _composition.exportNode('root'));
+			node.nestChild(vectorElem, _composition.exportNode(naming.ROOT_NAME));
 			targets.buildTargets(avdElem);
 			resolve(avdElem);
 		})
