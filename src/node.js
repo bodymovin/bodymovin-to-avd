@@ -138,6 +138,26 @@ function getChildren(nodeElem) {
  	return array[array.length - 1];
  }
 
+ function getLastLeaves(node) {
+ 	var leaves = [];
+ 	var children = getChildren(node);
+ 	var hasChildren = false;
+ 	if(children && isArray(children)) {
+ 		var i, len = children.length, tagName;
+ 		for(i = 0; i < len; i += 1) {
+ 			tagName = getTagName(children[i]);
+ 			if (tagName !== '_attr') {
+ 				hasChildren = true;
+ 				leaves = leaves.concat(getLastLeaves(children[i]));
+ 			}
+ 		}
+ 	}
+ 	if(!hasChildren) {
+ 		leaves.push(node);
+ 	}
+ 	return leaves;
+ }
+
  module.exports = {
  	createNode: createNode,
  	createNodeWithAttributes: createNodeWithAttributes,
@@ -148,5 +168,6 @@ function getChildren(nodeElem) {
  	nestArray: nestArray,
  	getChild: getChild,
  	getChildren: getChildren,
+ 	getLastLeaves: getLastLeaves,
  	cloneNode: cloneNode
  }

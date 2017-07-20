@@ -91,15 +91,15 @@ function createVectorDrawable(width, height) {
 	 	_avd.processAnimation(animation)
 	 	.then(_avd.exportNode)
 	 	.then(function(avdNode){
-	 		fs.writeFile("./test.json", JSON.stringify(avdNode), function(err) {
+	 		/*fs.writeFile("./test.json", JSON.stringify(avdNode), function(err) {
 	 			if(err) {
 	 				return console.log(err);
 	 			}
-	 			var xmlString = xml(avdNode, ' ');
-	 			resolve(xmlString);
 
 	 			console.log("The file was saved!");
-	 		}); 
+	 		}); */
+ 			var xmlString = xml(avdNode, ' ');
+ 			resolve(xmlString);
 
 	 	}).catch(function(err){
 	 		console.log(err.stack)

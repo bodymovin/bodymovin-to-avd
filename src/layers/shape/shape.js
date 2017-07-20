@@ -17,9 +17,7 @@ function shape(layerData, _level) {
 		layerData: layerData
 	}
 
-	function exportNode(name) {
-		var groupName = name + naming.DRAWABLE_NAME;
-		var gr = node.createNode('group', groupName);
+	function createNodeInstance(grouper, groupName){
 		var drawableNodes;
 		var i, len = drawables.length;
 		var j, jLen;
@@ -27,8 +25,25 @@ function shape(layerData, _level) {
 			drawableNodes = drawables[i].exportDrawables(groupName, state.timeOffset);
 			jLen = drawableNodes.length;
 			for(j = 0; j < jLen; j += 1) {
-				node.nestChild(gr, drawableNodes[j]);
+				node.nestChild(grouper, drawableNodes[j]);
 			}
+		}
+	}
+
+	function exportNode(name) {
+		var groupName = name + naming.DRAWABLE_NAME;
+		var masksGroup = factoryInstance.getMasks(groupName);
+		var gr;
+		if(masksGroup) {
+			gr = masksGroup;
+			var leaves = node.getLastLeaves(masksGroup);
+			var i, len = leaves.length;
+			for(i = 0; i < len; i += 1) {
+				createNodeInstance(leaves[i], groupName + naming.GROUP_NAME + '_' + i);
+			}
+		} else {
+			gr = node.createNode('group', groupName);
+			createNodeInstance(gr, groupName);
 		}
 		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, groupName, true);
 		return parentNode;

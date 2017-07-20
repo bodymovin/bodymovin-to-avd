@@ -7,7 +7,8 @@ var long_naming = {
 	DRAWABLE_NAME: '_DRAWABLE',
 	PATH_NAME: '_PATH',
 	ROOT_NAME: '_ROOT',
-	PARENT_NAME: '_PARENT'
+	PARENT_NAME: '_PARENT',
+	CLIP_NAME: '_CLIP'
 }
 var short_naming = {
 	GROUP_NAME: '_G',
@@ -16,7 +17,8 @@ var short_naming = {
 	DRAWABLE_NAME: '_D',
 	PATH_NAME: '_P',
 	ROOT_NAME: '_R',
-	PARENT_NAME: '_N'
+	PARENT_NAME: '_N',
+	CLIP_NAME: '_C'
 }
 
 var naming = config.naming === 'short' ? short_naming : long_naming
