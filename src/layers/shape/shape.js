@@ -1,5 +1,3 @@
-var masker = require ('../masker');
-var transformer = require ('../transformer');
 var layer = require ('../layer');
 var drawableFactory = require ('./drawable');
 var node = require ('../../node');
@@ -22,31 +20,12 @@ function shape(layerData, _level) {
 		var i, len = drawables.length;
 		var j, jLen;
 		for(i = 0; i < len; i += 1) {
-			drawableNodes = drawables[i].exportDrawables(groupName, state.timeOffset);
+			drawableNodes = drawables[i].exportDrawables(groupName + naming.DRAWABLE_NAME + '_' + i, state.timeOffset);
 			jLen = drawableNodes.length;
 			for(j = 0; j < jLen; j += 1) {
 				node.nestChild(grouper, drawableNodes[j]);
 			}
 		}
-	}
-
-	function exportNode(name) {
-		var groupName = name + naming.DRAWABLE_NAME;
-		var masksGroup = factoryInstance.getMasks(groupName);
-		var gr;
-		if(masksGroup) {
-			gr = masksGroup;
-			var leaves = node.getLastLeaves(masksGroup);
-			var i, len = leaves.length;
-			for(i = 0; i < len; i += 1) {
-				createNodeInstance(leaves[i], groupName + naming.GROUP_NAME + '_' + i);
-			}
-		} else {
-			gr = node.createNode('group', groupName);
-			createNodeInstance(gr, groupName);
-		}
-		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, groupName, true);
-		return parentNode;
 	}
 
 	function addPathToDrawables(path) {
@@ -115,9 +94,9 @@ function shape(layerData, _level) {
 		setTransforms: setTransforms,
 		setTrimPath: setTrimPath,
 		processData: processData,
-		exportNode: exportNode
+		createNodeInstance: createNodeInstance
 	};
-	Object.assign(factoryInstance, layer(state), masker(state), transformer(state)); 
+	Object.assign(factoryInstance, layer(state)); 
 	
 	return factoryInstance;
 }

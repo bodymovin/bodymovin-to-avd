@@ -1,9 +1,8 @@
 var grouper = require ('./grouper');
-var masker = require ('./masker');
-var transformer = require ('./transformer');
 var layer = require ('./layer');
 var node = require ('../node');
 var shapeFactory = require ('../layers/shape/shape');
+var solidFactory = require ('../layers/solid/solid');
 var naming = require('../naming');
 
 function composition(compositionData, assets) {
@@ -29,15 +28,12 @@ function composition(compositionData, assets) {
 		return [];
 	}
 
-	function exportNode(name) {
-		var gr = node.createNode('group', name);
-		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, name, true);
+	function createNodeInstance(grouper, groupName){
 		var layers = state.layers;
 		var len = layers.length;
 		for (i = 0; i < len; i += 1) {
-			node.nestChild(gr, layers[i].exportNode(name + naming.LAYER_NAME + '_' + i));
+			node.nestChild(grouper, layers[i].exportNode(groupName + naming.LAYER_NAME + '_' + i));
 		}
-		return parentNode;
 	}
 
 	function processData() {
@@ -48,6 +44,8 @@ function composition(compositionData, assets) {
 				layer = shapeFactory(compLayersData[i]);
 			} else if(compLayersData[i].ty === 0) {
 				layer = composition(compLayersData[i], assets);
+			} else if(compLayersData[i].ty === 1) {
+				layer = solidFactory(compLayersData[i]);
 			} else {
 				layer = null;
 			}
@@ -62,10 +60,10 @@ function composition(compositionData, assets) {
 	}
 
 	var factoryInstance = {
-		exportNode: exportNode,
+		createNodeInstance: createNodeInstance,
 		processData: processData
 	};
-	Object.assign(factoryInstance, layer(state), masker(state), transformer(state)); 
+	Object.assign(factoryInstance, layer(state)); 
 
 	return factoryInstance;
 }
