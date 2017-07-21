@@ -13,6 +13,7 @@ function masker(state) {
 		currentPaths: []
 	};
 	var clipName,containerGroup,animatedProp;
+	var clipPathString = '';
 
 	function buildMask(path) {
 		if(!path) {
@@ -24,6 +25,7 @@ function masker(state) {
 		clipName += naming.PARENT_NAME + '_' + nestCount;
 		animatedProp = null;
 		nestCount = 0;
+		clipPathString = '';
 
 		return clipPath;
 
@@ -38,7 +40,6 @@ function masker(state) {
 		}
 		var paths = currentMaskData.currentPaths;
 		var i, len = paths.length, j, jLen;
-		var clipPathString = '';
 		var currentClipPathString = '';
 		var nestCount = 0, animatedProp, prevNode, maskNode;
 		clipName = name + naming.CLIP_NAME + '_' + maskCount + naming.PARENT_NAME + '_' + nestCount;
@@ -95,7 +96,9 @@ function masker(state) {
 			}
 			prevNode = maskNode;
 		}
-		node.nestChild(containerGroup, prevNode);
+		var grouperContainer = node.createNode('group', name + naming.GROUP_NAME + maskCount);
+		node.nestChild(grouperContainer, prevNode);
+		node.nestChild(containerGroup, grouperContainer);
 		currentMaskData.type = '';
 		currentMaskData.currentPaths.length = 0;
 		hasAnimatedProp = false;

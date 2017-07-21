@@ -2,6 +2,7 @@ var naming = require('../naming');
 var node = require ('../node');
 var masker = require ('./masker');
 var transformer = require ('./transformer');
+var createTransformGroup = require ('../helpers/transform/createTransformGroup');
 
 function layer(state) {
 
@@ -31,7 +32,12 @@ function layer(state) {
 			gr = node.createNode('group', groupName);
 			this.createNodeInstance(gr, groupName);
 		}
-		var parentNode = factoryInstance.buildParenting(state.layerData.parent, gr, groupName, true);
+		var parentNode = gr;
+		if(state.layerData.ks){
+			var transformArray = createTransformGroup(groupName, state.layerData.ks, state.timeOffset, state.frameRate, parentNode);
+			parentNode = node.nestArray(transformArray);
+			parentNode = factoryInstance.buildParenting(state.layerData.parent, parentNode, groupName, true);
+		}
 		return parentNode;
 	}
 
