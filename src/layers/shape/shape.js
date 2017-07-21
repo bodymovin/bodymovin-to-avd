@@ -31,7 +31,7 @@ function shape(layerData, _level) {
 	function addPathToDrawables(path) {
 		var i, len = drawables.length;
 		for(i = 0; i < len; i += 1) {
-			drawables[i].addPath(path, transforms, level);
+			drawables[i].addPath(path, transforms, level, trimPath);
 		}
 	}
 

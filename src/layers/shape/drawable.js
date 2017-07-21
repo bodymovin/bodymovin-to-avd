@@ -128,11 +128,11 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		return false;
 	}
 	
-	function addPath(path, transforms, level) {
+	function addPath(path, transforms, level, trimPath) {
 		if (closed) {
 			return;
 		}
-		paths.push({path: path, transforms: transforms, level: level});
+		paths.push({path: path, transforms: transforms, level: level, trimPath: trimPath});
 	}
 
 	function canFlattenPath(transforms, level) {
@@ -157,10 +157,11 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		var transforms;
 		var finalPathData = '';
 		var animatedProp;
-		var currentPath;
+		var currentPath, pathData;
 		for(i = 0; i < len; i += 1){
-			transforms = pathList[i].transforms;
-			jLen = pathList[i].level;
+			pathData = pathList[i];
+			transforms = pathData.transforms;
+			jLen = pathData.level;
 			matrix.reset();
 
 			if(!canFlattenPath(transforms, jLen)){
@@ -183,8 +184,8 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 				}
 			}
 
-			if(pathList[i].path.ks.a === 0) {
-				currentPath = ' ' + createPathData(pathList[i].path.ks.k, matrix);
+			if(pathData.path.ks.a === 0) {
+				currentPath = ' ' + createPathData(pathData.path.ks.k, matrix);
 				finalPathData += currentPath;
 				if(animatedProp) {
 					var aaptAttr = node.getChild(animatedProp,'aapt:attr');
@@ -202,13 +203,43 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					}
 				}
 			} else {
-				animatedProp = property.createAnimatedPathData(pathName, pathList[i].path.ks.k, matrix, finalPathData, timeOffset, frameRate);
-				currentPath = ' ' + createPathData(pathList[i].path.ks.k[0].s[0], matrix);
+				animatedProp = property.createAnimatedPathData(pathName, pathData.path.ks.k, matrix, finalPathData, timeOffset, frameRate);
+				currentPath = ' ' + createPathData(pathData.path.ks.k[0].s[0], matrix);
 				finalPathData += currentPath;
 				targets.addTarget(animatedProp);
 			}
+
+			if(pathData.trimPath) {
+				var trimPathData = pathData.trimPath;
+				var startValue, endValue, offsetValue;
+				if (trimPathData.s.a === 0) {
+					startValue = trimPathData.s.k * 0.01;
+				} else {
+					startValue = trimPathData.s.k[0].s * 0.01;
+					animatedProp = property.createAnimatedProperty(pathName, 'trimPathStart', trimPathData.s.k, timeOffset, frameRate);
+					targets.addTarget(animatedProp);
+				}
+				if (trimPathData.e.a === 0) {
+					endValue = trimPathData.e.k * 0.01;
+				} else {
+					endValue = trimPathData.e.k[0].s * 0.01;
+					animatedProp = property.createAnimatedProperty(pathName, 'trimPathEnd', trimPathData.e.k, timeOffset, frameRate);
+					targets.addTarget(animatedProp);
+				}
+				if (trimPathData.o.a === 0) {
+					offsetValue = trimPathData.o.k * 1/360;
+				} else {
+					offsetValue = trimPathData.o.k[0].s * 1/360;
+					animatedProp = property.createAnimatedProperty(pathName, 'trimPathOffset', trimPathData.o.k, timeOffset, frameRate);
+					targets.addTarget(animatedProp);
+				}
+				node.addAttribute(pathNode,'android:trimPathStart', startValue);
+				node.addAttribute(pathNode,'android:trimPathEnd', endValue);
+				node.addAttribute(pathNode,'android:trimPathOffset', offsetValue);
+			}
 		}
 		node.addAttribute(pathNode,'android:pathData', finalPathData);
+
 		return finalNode;
 	}
 
@@ -222,7 +253,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		for(i = 0; i < len; i += 1) {
 			pathData = paths[i];
 			if(!currentPathList.length 
-				|| (((!hasAnimatedPath && pathData.path.ks.a === 1) || pathData.path.ks.a === 0) && canFlattenPath(pathData.transforms, pathData.level))) {
+				|| (((!hasAnimatedPath && pathData.path.ks.a === 1) || pathData.path.ks.a === 0) && canFlattenPath(pathData.transforms, pathData.level)) && !pathData.trimPath) {
 				if(pathData.path.ks.a === 1) {
 					hasAnimatedPath = true;
 				}
