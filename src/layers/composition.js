@@ -31,8 +31,8 @@ function composition(compositionData, assets) {
 	function createNodeInstance(grouper, groupName){
 		var layers = state.layers;
 		var len = layers.length;
-		for (i = 0; i < len; i += 1) {
-			node.nestChild(grouper, layers[i].exportNode(groupName + naming.LAYER_NAME + '_' + i));
+		for (i = len - 1; i >= 0; i -= 1) {
+			node.nestChild(grouper, layers[i].exportNode(groupName + naming.LAYER_NAME + '_' + i, state.workAreaOffset));
 		}
 	}
 
@@ -51,12 +51,12 @@ function composition(compositionData, assets) {
 			}
 			if(layer){
 				layer.setTimeOffset(state.timeOffset + state.startPoint);
-				layer.setFrameRate(state.frameRate);
 				layer.setSiblings(compLayersData);
 				layer.processData();
 				state.layers.push(layer);
 			}
 		}
+		return factoryInstance;
 	}
 
 	var factoryInstance = {

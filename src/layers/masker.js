@@ -14,6 +14,7 @@ function masker(state) {
 	};
 	var clipName,containerGroup,animatedProp;
 	var clipPathString = '';
+	var masksList = [];
 
 	function buildMask(path) {
 		if(!path) {
@@ -21,8 +22,21 @@ function masker(state) {
 		}
 		var clipPath = node.createNode('clip-path', clipName);
 		node.addAttribute(clipPath,'android:pathData', path);
-		
-		clipName += naming.PARENT_NAME + '_' + nestCount;
+		if (currentMaskData.type === 'i') {
+			var i, len = masksList.length;
+			for (i = 0; i < len; i += 1) {
+				node.nestChild(clipPath, masksList[i]);
+			}
+			masksList.length = 0;
+		} else if (currentMaskData.type === 'a') {
+			if(masksList.length) {
+				var grouperContainer = node.createNode('group', clipName + naming.GROUP_NAME + maskCount);
+				node.nestChild(grouperContainer, masksList[masksList.length - 1]);
+				masksList[masksList.length - 1] = grouperContainer;
+			}
+		}
+		masksList.push(clipPath);
+
 		animatedProp = null;
 		nestCount = 0;
 		clipPathString = '';
@@ -41,30 +55,20 @@ function masker(state) {
 		var paths = currentMaskData.currentPaths;
 		var i, len = paths.length, j, jLen;
 		var currentClipPathString = '';
-		var nestCount = 0, animatedProp, prevNode, maskNode;
-		clipName = name + naming.CLIP_NAME + '_' + maskCount + naming.PARENT_NAME + '_' + nestCount;
+		var animatedProp, prevNode, maskNode;
+		clipName = name + naming.CLIP_NAME + '_' + maskCount;
 		for (i = 0; i < len; i+= 1) {
 			if (paths[i].type === 'i') {
-				if(clipPathString !== ''){
-					maskNode = buildMask(clipPathString);
-					if(maskNode) {
-						if(prevNode) {
-							node.nestChild(maskNode, prevNode);
-						}
-						prevNode = maskNode;
-					}
-				}
 				if (paths[i].pt.a === 1) {
-					animatedProp = property.createAnimatedPathData(clipName, paths[i].pt.k, null, clipPathString, state.timeOffset, state.frameRate);
+					animatedProp = property.createAnimatedPathData(clipName, paths[i].pt.k, null, clipPathString, state.timeOffset);
 					targets.addTarget(animatedProp);
 					clipPathString += ' ' + createPathData(paths[i].pt.k[0].s[0], null);
 				} else {
 					clipPathString += ' ' + createPathData(paths[i].pt.k, null);
 				}
-				nestCount += 1;
 			} else if (paths[i].type === 'a') {
 				if (paths[i].pt.a === 1) {
-					animatedProp = property.createAnimatedPathData(clipName, paths[i].pt.k, null, clipPathString, state.timeOffset, state.frameRate);
+					animatedProp = property.createAnimatedPathData(clipName, paths[i].pt.k, null, clipPathString, state.timeOffset);
 					targets.addTarget(animatedProp);
 					clipPathString += ' ' + createPathData(paths[i].pt.k[0].s[0], null);
 				} else {
@@ -86,19 +90,19 @@ function masker(state) {
 					}
 					clipPathString += ' ' + currentClipPathString;
 				}
-				nestCount += 1;
 			}
 		}
-		maskNode = buildMask(clipPathString);
+		buildMask(clipPathString);
+		/*maskNode = buildMask(clipPathString);
 		if(maskNode) {
 			if(prevNode) {
 				node.nestChild(maskNode, prevNode);
 			}
 			prevNode = maskNode;
-		}
-		var grouperContainer = node.createNode('group', name + naming.GROUP_NAME + maskCount);
-		node.nestChild(grouperContainer, prevNode);
-		node.nestChild(containerGroup, grouperContainer);
+		}*/
+		//var grouperContainer = node.createNode('group', name + naming.GROUP_NAME + maskCount);
+		//node.nestChild(grouperContainer, prevNode);
+		//node.nestChild(containerGroup, grouperContainer);
 		currentMaskData.type = '';
 		currentMaskData.currentPaths.length = 0;
 		hasAnimatedProp = false;
@@ -123,12 +127,21 @@ function masker(state) {
 						}
 						currentMaskData.currentPaths.push({pt:maskProp.pt, type:'a'});
 					} else if (maskProp.mode === 'i') {
+						if(currentMaskData.type !== ''){
+							buildPreviousMaskGroup(name);
+						}
 						currentMaskData.type = 'i';
 						currentMaskData.currentPaths.push({pt:maskProp.pt, type:'i'});
 					}
 				}
 			}
 			buildPreviousMaskGroup(name);
+			if(masksList.length) {
+				len = masksList.length;
+				for (i = 0; i < len; i += 1) {
+					node.nestChild(containerGroup, masksList[i]);
+				}
+			}
 		}
 		return containerGroup;
 	}

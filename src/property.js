@@ -4,8 +4,10 @@ var rgbHex = require('rgb-hex');
 var Matrix = require('transformatrix');
 
 var _matrix = new Matrix();
+var frameRate = 0;
+var timeCap = Number.MAX_SAFE_INTEGER;
 
-function createAnimatedProperty(targetName, propertyType, keyframes, timeOffset, frameRate) {
+function createAnimatedProperty(targetName, propertyType, keyframes, timeOffset) {
 	var target = createTargetNode(targetName);
 	var aapt = createAAPTAnimation();
 	node.nestChild(target, aapt);
@@ -19,41 +21,46 @@ function createAnimatedProperty(targetName, propertyType, keyframes, timeOffset,
 	}
 	var i, len = keyframes.length;
 	var objectAnimator, multiplier;
+	var index;
 	for( i = 1; i < len; i += 1) {
 		if(propertyType === 'position') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'anchor') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'scale') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleX', {type:'multidimensional', index:0, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleX', {type:'multidimensional', index:0, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleY', {type:'multidimensional', index:1, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'scaleY', {type:'multidimensional', index:1, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset});
+			node.nestChild(set, objectAnimator);
+		} else if(propertyType === 'scaleX' || propertyType === 'scaleY') {
+			index = propertyType === 'scaleX' ? 0 : 1;
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'multidimensional', index:index, interpolationType:'multidimensional', multiplier:0.01, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'rotation' || propertyType === 'strokeWidth') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'pathData') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional', timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'fillColor' || propertyType === 'strokeColor') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'color', interpolationType:'unidimensional', timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'color', interpolationType:'unidimensional', timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		} else if(propertyType === 'strokeAlpha' || propertyType === 'fillAlpha' || propertyType === 'trimPathEnd' || propertyType === 'trimPathStart' || propertyType === 'trimPathOffset') {
 			multiplier = propertyType === 'trimPathOffset' ? 1/360 : 0.01;
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', interpolationType:'unidimensional', multiplier:multiplier, timeOffset: timeOffset, frameRate: frameRate});
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyType, {type:'unidimensional', interpolationType:'unidimensional', multiplier:multiplier, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
 		}
 	}
 	return target;
 }
 
-function createAnimatedPathData(targetName, keyframes, matrix, staticPath, timeOffset, frameRate) {
+function createAnimatedPathData(targetName, keyframes, matrix, staticPath, timeOffset) {
 	var target = createTargetNode(targetName);
 	var aapt = createAAPTAnimation();
 	node.nestChild(target, aapt);
@@ -68,7 +75,7 @@ function createAnimatedPathData(targetName, keyframes, matrix, staticPath, timeO
 	var i, len = keyframes.length;
 	var objectAnimator, multiplier;
 	for( i = 1; i < len; i += 1) {
-		objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional', timeOffset: timeOffset, frameRate: frameRate, matrix: matrix, staticPath: staticPath});
+		objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'pathData', {type:'path', interpolationType:'unidimensional', timeOffset: timeOffset, matrix: matrix, staticPath: staticPath});
 		node.nestChild(set, objectAnimator);
 	}
 	return target;
@@ -102,20 +109,24 @@ function createTargetNode(nodeName) {
  function createAnimatorObject(initialValue, finalValue, propertyName, options) {
  	options.multiplier = options.multiplier || 1;
  	options.timeOffset = options.timeOffset || 0;
- 	options.frameRate = options.frameRate || 1;
  	options.matrix = options.matrix || _matrix.reset();
  	options.staticPath = options.staticPath || '';
+ 	var duration = finalValue.t - initialValue.t;
+ 	var startOffset = initialValue.t + options.timeOffset;
+ 	if (options.timeOffset + finalValue.t > timeCap || startOffset < 0) {
+ 		return null;
+ 	}
  	var attributes = [{
  		key: 'android:propertyName',
  		value: propertyName
  	},
  	{
  		key: 'android:duration',
- 		value: Math.round((finalValue.t - initialValue.t)/options.frameRate*1000)
+ 		value: Math.round(duration / frameRate * 1000)
  	},
  	{
  		key: 'android:startOffset',
- 		value: Math.round((initialValue.t + options.timeOffset)/options.frameRate*1000)
+ 		value: Math.round(startOffset / frameRate * 1000)
  	}];
  	if (options.type === 'multidimensional') {
  		attributes.push({
@@ -209,6 +220,9 @@ function createTargetNode(nodeName) {
  }
 
 function buildInterpolator(initialValue, finalValue, options) {
+	if(!initialValue.o){
+		return null;
+	}
 	var attributes = [{
 		key: 'name',
 		value: 'android:interpolator'
@@ -240,11 +254,26 @@ function buildInterpolator(initialValue, finalValue, options) {
 	return aaptInterpolator;
 }
 
+function setFrameRate(_frameRate) {
+	frameRate = _frameRate;
+}
+
+function setTimeCap(_timeCap) {
+	timeCap = _timeCap;
+}
+
+function getTimeCap() {
+	return timeCap;
+}
+
  module.exports = {
  	createAnimatedProperty: createAnimatedProperty,
  	createAnimatedPathData: createAnimatedPathData,
  	createAnimatorObject: createAnimatorObject,
  	createAAPTAnimation: createAAPTAnimation,
  	createTargetNode: createTargetNode,
- 	createSetNode: createSetNode
+ 	createSetNode: createSetNode,
+ 	setFrameRate: setFrameRate,
+ 	setTimeCap: setTimeCap,
+ 	getTimeCap: getTimeCap
  }

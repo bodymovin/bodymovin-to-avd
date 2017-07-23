@@ -42,14 +42,13 @@ function shape(layerData, _level) {
 		for (i = len - 1; i >= 0; i -= 1) {
 			if(state.shapes[i].ty === 'gr') {
 				shapeGroup = shape(state.shapes[i], level + 1);
-				shapeGroup.setTimeOffset(state.timeOffset);
-				shapeGroup.setFrameRate(state.frameRate);
-				shapeGroup.setDrawables(drawables)
+				shapeGroup.setTimeOffset(state.timeOffset)
+				.setDrawables(drawables)
 				.setTransforms(transforms)
 				.setTrimPath(trimPath)
 				.processData();
 			} else if(state.shapes[i].ty === 'fl' || state.shapes[i].ty === 'st') {
-				drawable = drawableFactory(state.shapes[i], level, state.timeOffset, state.frameRate);
+				drawable = drawableFactory(state.shapes[i], level, state.timeOffset);
 				drawables.push(drawable);
 				localDrawables.push(drawable);
 			} else if(state.shapes[i].ty === 'tr') {

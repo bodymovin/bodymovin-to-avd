@@ -1,6 +1,7 @@
 var compositionFactory = require ('../layers/composition');
 var node = require ('../node');
 var naming = require ('../naming');
+var property = require ('../property');
 var targets = require ('../targets/targets');
 
 function avd(_animationData) {
@@ -42,6 +43,44 @@ function avd(_animationData) {
 		return nodeElement;
 		//<aapt:attr name="android:drawable">
 	}
+
+	function createTimeRangeObject() {
+		var name = 'time_group';
+		var timeNode = node.createNode('group',name);
+		var attributes = [{
+			key: 'android:propertyName',
+			value: 'translateX'
+		},
+		{
+			key: 'android:duration',
+			value: Math.round((animationData.op - animationData.ip)/animationData.fr*1000)
+		},
+		{
+			key: 'android:startOffset',
+			value: '0'
+		},
+		{
+			key: 'android:valueFrom',
+			value: '0'
+		},
+		{
+			key: 'android:valueTo',
+			value: '1'
+		},
+		{
+			key: 'android:valueType',
+			value: 'floatType'
+		}];
+ 		var objectAnimator = node.createNodeWithAttributes('objectAnimator', attributes, '');
+ 		var target = property.createTargetNode(name);
+		var aapt = property.createAAPTAnimation();
+		node.nestChild(target, aapt);
+		var set = property.createSetNode();
+		node.nestChild(aapt, set);
+		node.nestChild(set, objectAnimator);
+		targets.addTarget(target);
+		return timeNode;
+	}
 	
 
 	function exportNode() {
@@ -53,6 +92,7 @@ function avd(_animationData) {
 			node.nestChild(aaptVectorElem, vectorElem);
 			node.nestChild(avdElem, aaptVectorElem);
 			node.nestChild(vectorElem, _composition.exportNode(naming.ROOT_NAME));
+			node.nestChild(vectorElem, createTimeRangeObject())
 			targets.buildTargets(avdElem);
 			resolve(avdElem);
 		})
@@ -67,10 +107,12 @@ function avd(_animationData) {
 	function processAnimation(_animationData) {
 		var promise = new Promise(function(resolve, reject){
 			animationData = _animationData;
-			_composition = compositionFactory(_animationData, _animationData.assets);
-			_composition.setFrameRate(_animationData.fr);
-			_composition.setTimeOffset(0);
-			_composition.processData();
+			property.setFrameRate(animationData.fr);
+			property.setTimeCap(animationData.op);
+			_composition = compositionFactory(_animationData, _animationData.assets)
+			.setTimeOffset(-_animationData.ip)
+			.setWorkAreaOffset(_animationData.ip)
+			.processData();
 			resolve();
 		})
 		return promise;

@@ -8,7 +8,8 @@ var long_naming = {
 	PATH_NAME: '_PATH',
 	ROOT_NAME: '_ROOT',
 	PARENT_NAME: '_PARENT',
-	CLIP_NAME: '_CLIP'
+	CLIP_NAME: '_CLIP',
+	TIME_NAME: '_TIME'
 }
 var short_naming = {
 	GROUP_NAME: '_G',
@@ -18,7 +19,9 @@ var short_naming = {
 	PATH_NAME: '_P',
 	ROOT_NAME: '_R',
 	PARENT_NAME: '_N',
-	CLIP_NAME: '_C'
+	CLIP_NAME: '_C',
+	SOLID_NAME: '_S',
+	TIME_NAME: '_M'
 }
 
 var naming = config.naming === 'short' ? short_naming : long_naming

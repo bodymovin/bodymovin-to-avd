@@ -56,7 +56,6 @@
  	if(isArray(children)){
 	 	var i =0, len = children.length;
 	 	while(i < len) {
-			//console.log('children[i]._attr:',  children[i]._attr)
 	 		if(children[i]._attr && children[i]._attr[key]) {
 	 			return children[i]._attr[key];
 	 		}
@@ -90,6 +89,9 @@ function getChildren(nodeElem) {
  }
 
  function nestChild(nodeElem, nested) {
+ 	if(!nested) {
+ 		return;
+ 	}
  	var tagName = getTagName(nodeElem);
  	if(!isArray(nodeElem[tagName])){
  		var attrs = nodeElem[tagName];

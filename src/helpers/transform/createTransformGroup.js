@@ -4,10 +4,10 @@ var targets = require('../../targets/targets');
 var naming = require('../../naming');
 
 
-function createTransformGroup(name, transform, timeOffset, frameRate, _container) {
+function createTransformGroup(name, transform, timeOffset, _container) {
 	var changed = false;
 	var nodes =[];
-	var currentName;
+	var currentName = name;
 	var container;
 	//var name = node.getAttribute(container, 'android:name');
 	if(_container) {
@@ -50,7 +50,7 @@ function createTransformGroup(name, transform, timeOffset, frameRate, _container
 					} else {
 						addAttributeToContainer('android:rotation', transform.r.k[0].s);
 						//node.addAttribute(container,'android:rotation', transform.r.k[0].s);
-						var animatedProperty = property.createAnimatedProperty(currentName, 'rotation', transform.r.k, timeOffset, frameRate);
+						var animatedProperty = property.createAnimatedProperty(currentName, 'rotation', transform.r.k, timeOffset);
 						targets.addTarget(animatedProperty);
 					}
 				}
@@ -69,7 +69,7 @@ function createTransformGroup(name, transform, timeOffset, frameRate, _container
 						//node.addAttribute(container,'android:scaleY', transform.s.k[0].s[1]/100);
 						addAttributeToContainer('android:scaleX', transform.s.k[0].s[0]/100);
 						addAttributeToContainer('android:scaleY', transform.s.k[0].s[1]/100);
-						var animatedProperty = property.createAnimatedProperty(currentName, 'scale', transform.s.k, timeOffset, frameRate);
+						var animatedProperty = property.createAnimatedProperty(currentName, 'scale', transform.s.k, timeOffset);
 						targets.addTarget(animatedProperty);
 					}
 				}
@@ -77,7 +77,7 @@ function createTransformGroup(name, transform, timeOffset, frameRate, _container
 	} else {
 		if(transform.a.a !== 0 || transform.a.k[0] !== 0 || transform.a.k[1] !== 0) {
 			if (transform.a.a === 1) {
-				var animatedProperty = property.createAnimatedProperty(currentName, 'anchor', transform.a.k, timeOffset, frameRate);
+				var animatedProperty = property.createAnimatedProperty(currentName, 'anchor', transform.a.k, timeOffset);
 				targets.addTarget(animatedProperty);
 				//node.addAttribute(container,'android:translateX', -transform.a.k[0].s[0]);
 				//node.addAttribute(container,'android:translateY', -transform.a.k[0].s[1]);
@@ -115,7 +115,7 @@ function createTransformGroup(name, transform, timeOffset, frameRate, _container
 				//node.addAttribute(container,'android:translateY', transform.p.k[0].s[1]);
 				addAttributeToContainer('android:translateX', transform.p.k[0].s[0]);
 				addAttributeToContainer('android:translateY', transform.p.k[0].s[1]);
-				var animatedProperty = property.createAnimatedProperty(currentName, 'position', transform.p.k, timeOffset, frameRate);
+				var animatedProperty = property.createAnimatedProperty(currentName, 'position', transform.p.k, timeOffset);
 				targets.addTarget(animatedProperty);
 			}
 		}
@@ -133,7 +133,7 @@ function createTransformGroup(name, transform, timeOffset, frameRate, _container
 			//node.addAttribute(container,'android:scaleY', transform.s.k[0].s[1]/100);
 			addAttributeToContainer('android:scaleX', transform.s.k[0].s[0]/100);
 			addAttributeToContainer('android:scaleY', transform.s.k[0].s[1]/100);
-			var animatedProperty = property.createAnimatedProperty(currentName, 'scale', transform.s.k, timeOffset, frameRate);
+			var animatedProperty = property.createAnimatedProperty(currentName, 'scale', transform.s.k, timeOffset);
 			targets.addTarget(animatedProperty);
 		}
 		if(transform.r.a === 0) {
@@ -144,7 +144,7 @@ function createTransformGroup(name, transform, timeOffset, frameRate, _container
 		} else {
 			//node.addAttribute(container,'android:rotation', transform.r.k[0].s);
 			addAttributeToContainer('android:rotation', transform.r.k[0].s);
-			var animatedProperty = property.createAnimatedProperty(currentName, 'rotation', transform.r.k, timeOffset, frameRate);
+			var animatedProperty = property.createAnimatedProperty(currentName, 'rotation', transform.r.k, timeOffset);
 			targets.addTarget(animatedProperty);
 		}
 	}

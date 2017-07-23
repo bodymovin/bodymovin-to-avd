@@ -10,13 +10,12 @@ var naming = require('../../naming');
 var matrix = new Matrix();
 var degToRads = Math.PI/180;
 
-function drawable(_drawableData, _level, _timeOffset, _frameRate) {
+function drawable(_drawableData, _level, _timeOffset) {
 	var paths = [];
 	var level = _level;
 	var drawableData = _drawableData;
 	var closed = false;
 	var timeOffset = _timeOffset;
-	var frameRate = _frameRate;
 
 	function getDrawingAttributes() {
 		var attributes = [];
@@ -36,7 +35,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					key: 'android:strokeColor',
 					value: '#' + hexColor
 				})
-				animatedProp = property.createAnimatedProperty(pathName, 'strokeColor', color.k, timeOffset, frameRate);
+				animatedProp = property.createAnimatedProperty(pathName, 'strokeColor', color.k, timeOffset);
 				targets.addTarget(animatedProp);
 			}
 			attributes.push({
@@ -58,7 +57,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					key: 'android:strokeWidth',
 					value: drawableData.w.k[0].s
 				})
-				animatedProp = property.createAnimatedProperty(pathName, 'strokeWidth', drawableData.w.k, timeOffset, frameRate);
+				animatedProp = property.createAnimatedProperty(pathName, 'strokeWidth', drawableData.w.k, timeOffset);
 				targets.addTarget(animatedProp);
 			}
 			if(drawableData.o.a === 0) {
@@ -71,7 +70,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					key: 'android:strokeAlpha',
 					value: drawableData.o.k[0].s * 0.01
 				})
-				animatedProp = property.createAnimatedProperty(pathName, 'strokeAlpha', drawableData.o.k, timeOffset, frameRate);
+				animatedProp = property.createAnimatedProperty(pathName, 'strokeAlpha', drawableData.o.k, timeOffset);
 				targets.addTarget(animatedProp);
 			}
 			
@@ -88,7 +87,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					key: 'android:fillColor',
 					value: '#' + hexColor
 				})
-				animatedProp = property.createAnimatedProperty(pathName, 'fillColor', color.k, timeOffset, frameRate);
+				animatedProp = property.createAnimatedProperty(pathName, 'fillColor', color.k, timeOffset);
 				targets.addTarget(animatedProp);
 			}
 			if(drawableData.o.a === 0) {
@@ -101,7 +100,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					key: 'android:fillAlpha',
 					value: drawableData.o.k[0].s * 0.01
 				})
-				animatedProp = property.createAnimatedProperty(pathName, 'fillAlpha', drawableData.o.k, timeOffset, frameRate);
+				animatedProp = property.createAnimatedProperty(pathName, 'fillAlpha', drawableData.o.k, timeOffset);
 				targets.addTarget(animatedProp);
 			}
 			attributes.push({
@@ -156,7 +155,7 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		matrix.reset();
 		var transforms;
 		var finalPathData = '';
-		var animatedProp;
+		var animatedProp, currentAnimatedProp;
 		var currentPath, pathData;
 		for(i = 0; i < len; i += 1){
 			pathData = pathList[i];
@@ -166,12 +165,12 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 
 			if(!canFlattenPath(transforms, jLen)){
 				for(j = jLen - 1; j >= 0; j -= 1) {
-					nestedArray = [finalNode].concat(createTransformGroup(pathName + naming.GROUP_NAME +'_' + j, transforms[j], timeOffset, frameRate));
+					nestedArray = [finalNode].concat(createTransformGroup(pathName + naming.GROUP_NAME +'_' + j, transforms[j], timeOffset));
 					finalNode = node.nestArray(nestedArray);
 					var name = node.getAttribute(finalNode, 'android:name');
 
 					//parentGroupNode = node.createNode('group', pathName + '_gr_' + j);
-					//groupNode = createTransformGroup(parentGroupNode, transforms[j], timeOffset, frameRate);
+					//groupNode = createTransformGroup(parentGroupNode, transforms[j], timeOffset);
 					//node.nestChild(parentGroupNode, finalNode);
 					//finalNode = groupNode;
 				}
@@ -203,10 +202,32 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					}
 				}
 			} else {
-				animatedProp = property.createAnimatedPathData(pathName, pathData.path.ks.k, matrix, finalPathData, timeOffset, frameRate);
-				currentPath = ' ' + createPathData(pathData.path.ks.k[0].s[0], matrix);
-				finalPathData += currentPath;
-				targets.addTarget(animatedProp);
+				if(animatedProp) {
+					if(pathData.path.ks.k[0].t > 0) {
+						var extraKeyframe = JSON.parse(JSON.stringify(pathData.path.ks.k[0]));
+						extraKeyframe.e = extraKeyframe.s;
+						extraKeyframe.t = 0;
+						pathData.path.ks.k.splice(0,0,extraKeyframe);
+					}
+					var aaptAttr = node.getChild(animatedProp,'aapt:attr');
+					var setProp = node.getChild(aaptAttr,'set');
+					var setChildren = node.getChildren(setProp);
+					jLen = setChildren.length;
+					var objectAnimator, value;
+					for(j = 0; j < jLen; j += 1) {
+						value = node.getAttribute(setChildren[j],'android:valueFrom');
+						if(value) { 
+							node.addAttribute(setChildren[j],'android:valueFrom', value + createPathData(pathData.path.ks.k[j - 1].s[0], matrix));
+							value = node.getAttribute(setChildren[j],'android:valueTo');
+							node.addAttribute(setChildren[j],'android:valueTo', value + createPathData(pathData.path.ks.k[j - 1].e[0], matrix));
+						}
+					}
+				} else {
+					animatedProp = property.createAnimatedPathData(pathName, pathData.path.ks.k, matrix, finalPathData, timeOffset);
+					currentPath = ' ' + createPathData(pathData.path.ks.k[0].s[0], matrix);
+					finalPathData += currentPath;
+					targets.addTarget(animatedProp);
+				}
 			}
 
 			if(pathData.trimPath) {
@@ -216,21 +237,21 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 					startValue = trimPathData.s.k * 0.01;
 				} else {
 					startValue = trimPathData.s.k[0].s * 0.01;
-					animatedProp = property.createAnimatedProperty(pathName, 'trimPathStart', trimPathData.s.k, timeOffset, frameRate);
+					animatedProp = property.createAnimatedProperty(pathName, 'trimPathStart', trimPathData.s.k, timeOffset);
 					targets.addTarget(animatedProp);
 				}
 				if (trimPathData.e.a === 0) {
 					endValue = trimPathData.e.k * 0.01;
 				} else {
 					endValue = trimPathData.e.k[0].s * 0.01;
-					animatedProp = property.createAnimatedProperty(pathName, 'trimPathEnd', trimPathData.e.k, timeOffset, frameRate);
+					animatedProp = property.createAnimatedProperty(pathName, 'trimPathEnd', trimPathData.e.k, timeOffset);
 					targets.addTarget(animatedProp);
 				}
 				if (trimPathData.o.a === 0) {
 					offsetValue = trimPathData.o.k * 1/360;
 				} else {
 					offsetValue = trimPathData.o.k[0].s * 1/360;
-					animatedProp = property.createAnimatedProperty(pathName, 'trimPathOffset', trimPathData.o.k, timeOffset, frameRate);
+					animatedProp = property.createAnimatedProperty(pathName, 'trimPathOffset', trimPathData.o.k, timeOffset);
 					targets.addTarget(animatedProp);
 				}
 				node.addAttribute(pathNode,'android:trimPathStart', startValue);
@@ -243,6 +264,20 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		return finalNode;
 	}
 
+	function keyframesAreEqual(keyframes1, keyframes2) {
+		if(keyframes1.length !== keyframes2.length) {
+			return false;
+		}
+		var i = 0, len = keyframes1.length;
+		while (i<len) {
+			if(keyframes1[i].t !== keyframes2[i].t || keyframes1[i].n !== keyframes2[i].n){
+				return false;
+			}
+			i += 1;
+		}
+		return true;
+	}
+
 	function exportDrawables(name, _timeOffset) {
 		timeOffset = _timeOffset;
 		var drawableNodes = [];
@@ -250,11 +285,13 @@ function drawable(_drawableData, _level, _timeOffset, _frameRate) {
 		var pathName, pathOpen = false, pathCount = 0, pathAttributes;
 		var currentPathList = [];
 		var pathData, hasAnimatedPath = false;
+		var lastAnimatedPath;
 		for(i = 0; i < len; i += 1) {
 			pathData = paths[i];
 			if(!currentPathList.length 
-				|| (((!hasAnimatedPath && pathData.path.ks.a === 1) || pathData.path.ks.a === 0) && canFlattenPath(pathData.transforms, pathData.level)) && !pathData.trimPath) {
+				|| (((!hasAnimatedPath && pathData.path.ks.a === 1) || pathData.path.ks.a === 0 || (pathData.path.ks.a === 1 && keyframesAreEqual(lastAnimatedPath.k, pathData.path.ks.k))) && canFlattenPath(pathData.transforms, pathData.level)) && !pathData.trimPath) {
 				if(pathData.path.ks.a === 1) {
+					lastAnimatedPath = pathData.path.ks;
 					hasAnimatedPath = true;
 				}
 			} else {
