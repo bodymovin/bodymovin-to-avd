@@ -5,6 +5,7 @@ var fs = require('fs');
 var node = require('./node');
 var layer = require('./layer');
 var avdFactory = require('./avd/avd');
+var config = require('./config');
 
 function addTargetsToAVD(targets, avd) {
 	var target;
@@ -91,14 +92,8 @@ function createVectorDrawable(width, height) {
 	 	_avd.processAnimation(animation)
 	 	.then(_avd.exportNode)
 	 	.then(function(avdNode){
-	 		/*fs.writeFile("./test.json", JSON.stringify(avdNode), function(err) {
-	 			if(err) {
-	 				return console.log(err);
-	 			}
-
-	 			console.log("The file was saved!");
-	 		}); */
- 			var xmlString = xml(avdNode, ' ');
+	 		var format = config.xml_formatted ? ' ' : '';
+ 			var xmlString = xml(avdNode, format);
  			resolve(xmlString);
 
 	 	}).catch(function(err){
@@ -106,12 +101,5 @@ function createVectorDrawable(width, height) {
 	 		reject(err.stack);
 	 	});
 	 	//
-	 	/*var avd = createAnimatedVectorObject();
-	 	var vectorDrawable = createAAPTVectorDrawable(animation, targets);
-	 	node.nestChild(avd, vectorDrawable);
-	 	correctTargetsTimes(targets, animation.fr);
-	 	addTargetsToAVD(targets, avd);
-	 	var xmlString = xml(avd);
-	 	resolve(xmlString);*/
 	 })
  };

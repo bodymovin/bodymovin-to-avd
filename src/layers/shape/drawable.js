@@ -17,7 +17,7 @@ function drawable(_drawableData, _level, _timeOffset) {
 	var closed = false;
 	var timeOffset = _timeOffset;
 
-	function getDrawingAttributes() {
+	function getDrawingAttributes(pathName) {
 		var attributes = [];
 		var hexColor;
 		var color = drawableData.c;
@@ -146,7 +146,7 @@ function drawable(_drawableData, _level, _timeOffset) {
 	}
 
 	function buildNewPath(pathList, pathName) {
-		var pathAttributes = [].concat(getDrawingAttributes());
+		var pathAttributes = [].concat(getDrawingAttributes(pathName));
 		var pathNode = node.createNodeWithAttributes('path', pathAttributes, pathName);
 		var finalNode = pathNode;
 		var groupNode, nestedGroupNode, nestedArray;

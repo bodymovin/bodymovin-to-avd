@@ -30,7 +30,7 @@ function composition(compositionData, assets) {
 
 	function createNodeInstance(grouper, groupName){
 		var layers = state.layers;
-		var len = layers.length;
+		var i, len = layers.length;
 		for (i = len - 1; i >= 0; i -= 1) {
 			node.nestChild(grouper, layers[i].exportNode(groupName + naming.LAYER_NAME + '_' + i, state.workAreaOffset));
 		}
