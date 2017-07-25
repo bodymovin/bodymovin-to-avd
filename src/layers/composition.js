@@ -1,4 +1,3 @@
-var grouper = require ('./grouper');
 var layer = require ('./layer');
 var node = require ('../node');
 var shapeFactory = require ('../layers/shape/shape');

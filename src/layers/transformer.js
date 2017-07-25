@@ -1,6 +1,5 @@
 var node = require ('../node');
 var naming = require ('../naming');
-var applyTransformToContainer = require ('../transform');
 var createTransformGroup = require ('../helpers/transform/createTransformGroup');
 
 function transformer(state) {
@@ -47,12 +46,6 @@ function transformer(state) {
 			var containerParentGroup = node.nestArray(nestedArray);
 			containerParentGroup = buildParenting(parentData.parent, containerParentGroup, name, false);
 
-
-
-			/*var parentData = getLayerDataByIndex(parent);
-			var containerParentGroup = applyTransformToContainer(parentGroup, parentData.ks, state.timeOffset, state.frameRate);
-			node.nestChild(parentGroup, group);
-			containerParentGroup = buildParenting(containerParentGroup, parentData.parent, null);*/
 			return containerParentGroup;
 		}
 		return group;

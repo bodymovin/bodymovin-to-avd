@@ -3,7 +3,6 @@
 var xml = require('xml');
 var fs = require('fs');
 var node = require('./node');
-var layer = require('./layer');
 var avdFactory = require('./avd/avd');
 var config = require('./config');
 
