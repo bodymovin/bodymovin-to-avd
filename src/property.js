@@ -24,10 +24,16 @@ function createAnimatedProperty(targetName, propertyType, keyframes, timeOffset)
 	var index;
 	for( i = 1; i < len; i += 1) {
 		if(propertyType === 'position') {
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', timeOffset: timeOffset});
-			node.nestChild(set, objectAnimator);
-			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset});
-			node.nestChild(set, objectAnimator);
+			if (keyframes[i - 1].to) {
+				objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateXY', {type:'combined', interpolationType:'unidimensional', timeOffset: timeOffset});
+				node.nestChild(set, objectAnimator);
+			} else {
+				objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', timeOffset: timeOffset});
+				node.nestChild(set, objectAnimator);
+				objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateY', {type:'multidimensional', index:1, interpolationType:'unidimensional', timeOffset: timeOffset});
+				node.nestChild(set, objectAnimator);
+			}
+			
 		} else if(propertyType === 'anchor') {
 			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
@@ -149,8 +155,7 @@ function createTargetNode(nodeName) {
  			key: 'android:valueType',
  			value: 'floatType'
  		})
- 	}
- 	if (options.type === 'unidimensional') {
+ 	} else if (options.type === 'unidimensional') {
  		attributes.push({
  			key: 'android:valueFrom',
  			value: initialValue.s * options.multiplier
@@ -210,6 +215,24 @@ function createTargetNode(nodeName) {
  			key: 'android:valueType',
  			value: 'colorType'
  		})
+ 	} else if (options.type === 'combined') {
+ 		attributes.push({
+ 			key: 'android:propertyXName',
+ 			value: 'translateX'
+ 		})
+ 		attributes.push({
+ 			key: 'android:propertyYName',
+ 			value: 'translateY'
+ 		})
+ 		var pathValue = 'M ' + initialValue.s[0] + ',' + initialValue.s[1];
+ 		pathValue += 'C ' + (initialValue.s[0] + initialValue.to[0]) + ',' + (initialValue.s[1]  + initialValue.to[1]);
+ 		pathValue += ' ' + (initialValue.e[0] + initialValue.ti[0]) + ',' + (initialValue.e[1]  + initialValue.ti[1]);
+ 		pathValue += ' ' + (initialValue.e[0]) + ',' + (initialValue.e[1]);
+ 		attributes.push({
+ 			key: 'android:pathData',
+ 			value: pathValue
+ 		})
+ 		//android:pathData="M -8.0,0.0 c 1.33333,0.0 6.66667,0.0 8.0,0.0"
  	}
  	var objectAnimator = node.createNodeWithAttributes('objectAnimator', attributes, '');
  	if(initialValue.h !== 1) {
