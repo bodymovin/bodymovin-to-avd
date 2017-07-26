@@ -1,6 +1,6 @@
 var node = require('./node');
 var createPathData = require('./pathData');
-var rgbHex = require('rgb-hex');
+var rgbHex = require('./helpers/rgbToHex');
 var Matrix = require('transformatrix');
 
 var _matrix = new Matrix();

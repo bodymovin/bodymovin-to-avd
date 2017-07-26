@@ -1,8 +1,8 @@
 {
   "name": "bodymovin-to-avd",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Bodymovin to AVD converter",
-  "main": "lib/build.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/bodymovin/bodymovin-to-avd#readme",
   "dependencies": {
-    "rgb-hex": "^2.1.0",
     "transformation-matrix": "^1.4.0",
     "transformatrix": "^1.1.1",
     "xml": "^1.0.1"

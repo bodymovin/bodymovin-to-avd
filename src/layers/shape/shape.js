@@ -58,7 +58,7 @@ function shape(layerData, _level) {
 			} else if(state.shapes[i].ty === 'tm') {
 				trimPath = state.shapes[i];
 			} else {
-				console.log(state.shapes[i].ty)
+				//console.log(state.shapes[i].ty)
 			}
 		}
 
