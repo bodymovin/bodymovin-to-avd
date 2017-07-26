@@ -13,9 +13,13 @@
  }
 
  function createNode(tagName, name) {
- 	var node = {
- 		[tagName]:{_attr:{}}
- 	};
+ 	var node = {};
+ 	Object.defineProperty(node, tagName, {
+	  value: { _attr: {} },
+	  writable: true,
+	  enumerable: true,
+	  configurable: true
+	});
  	if(name) {
  		addAttribute(node, 'android:name', name);
  	}
