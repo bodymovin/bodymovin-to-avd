@@ -27,13 +27,13 @@ function drawable(_drawableData, _level, _timeOffset) {
 				hexColor = rgbHex(color.k[0]*255,color.k[1]*255,color.k[2]*255);
 				attributes.push({
 					key: 'android:strokeColor',
-					value: '#' + hexColor
+					value: hexColor
 				})
 			} else {
 				hexColor = rgbHex(color.k[0].s[0]*255,color.k[0].s[1]*255,color.k[0].s[2]*255)
 				attributes.push({
 					key: 'android:strokeColor',
-					value: '#' + hexColor
+					value: hexColor
 				})
 				animatedProp = property.createAnimatedProperty(pathName, 'strokeColor', color.k, timeOffset);
 				targets.addTarget(animatedProp);
@@ -79,13 +79,13 @@ function drawable(_drawableData, _level, _timeOffset) {
 				hexColor = rgbHex(color.k[0]*255,color.k[1]*255,color.k[2]*255)
 				attributes.push({
 					key: 'android:fillColor',
-					value: '#' + hexColor
+					value: hexColor
 				})
 			} else {
 				hexColor = rgbHex(color.k[0].s[0]*255,color.k[0].s[1]*255,color.k[0].s[2]*255)
 				attributes.push({
 					key: 'android:fillColor',
-					value: '#' + hexColor
+					value: hexColor
 				})
 				animatedProp = property.createAnimatedProperty(pathName, 'fillColor', color.k, timeOffset);
 				targets.addTarget(animatedProp);

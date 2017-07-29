@@ -198,17 +198,17 @@ function createTargetNode(nodeName) {
  	} else if (options.type === 'color') {
  		attributes.push({
  			key: 'android:valueFrom',
- 			value: '#' + rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
+ 			value: rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
  		})
  		if(initialValue.h === 1) {
 	 		attributes.push({
 	 			key: 'android:valueTo',
-	 			value: '#' + rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
+	 			value: rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
 	 		})
  		} else {
 	 		attributes.push({
 	 			key: 'android:valueTo',
-	 			value: '#' + rgbHex(initialValue.e[0]*255, initialValue.e[1]*255, initialValue.e[2]*255)
+	 			value: rgbHex(initialValue.e[0]*255, initialValue.e[1]*255, initialValue.e[2]*255)
 	 		})
  		}
  		attributes.push({
