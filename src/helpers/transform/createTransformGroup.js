@@ -4,7 +4,7 @@ var targets = require('../../targets/targets');
 var naming = require('../../naming');
 
 function isPositionAnimated(positionProperty) {
-	return isPositionXAnimated(positionProperty) && isPositionYAnimated(positionProperty);
+	return isPositionXAnimated(positionProperty) || isPositionYAnimated(positionProperty);
 }
 
 function isPositionXAnimated(positionProperty) {
