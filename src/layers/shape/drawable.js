@@ -9,6 +9,220 @@ var naming = require('../../naming');
 
 var matrix = new Matrix();
 var degToRads = Math.PI/180;
+var roundCorner = 0.5519;
+
+function convertEllipseToPath(ellipseData) {
+	if(ellipseData.s.a !== 0 || ellipseData.p.a !== 0) {
+		return null;
+	}
+	var p0 = ellipseData.p.k[0], p1 = ellipseData.p.k[1], s0 = ellipseData.s.k[0]/2, s1 = ellipseData.s.k[1]/2;
+	var vPoints = [[0,0],[0,0],[0,0],[0,0]];
+	var oPoints = [[0,0],[0,0],[0,0],[0,0]];
+	var iPoints = [[0,0],[0,0],[0,0],[0,0]];
+    if(ellipseData.d !== 3){
+        vPoints[0][0] = p0;
+        vPoints[0][1] = p1-s1;
+        vPoints[1][0] = p0 + s0;
+        vPoints[1][1] = p1;
+        vPoints[2][0] = p0;
+        vPoints[2][1] = p1+s1;
+        vPoints[3][0] = p0 - s0;
+        vPoints[3][1] = p1;
+        iPoints[0][0] = p0 - s0*roundCorner - vPoints[0][0];
+        iPoints[0][1] = p1 - s1 - vPoints[0][1];
+        iPoints[1][0] = p0 + s0 - vPoints[1][0];
+        iPoints[1][1] = p1 - s1*roundCorner - vPoints[1][1];
+        iPoints[2][0] = p0 + s0*roundCorner - vPoints[2][0];
+        iPoints[2][1] = p1 + s1 - vPoints[2][1];
+        iPoints[3][0] = p0 - s0 - vPoints[3][0];
+        iPoints[3][1] = p1 + s1*roundCorner - vPoints[3][1];
+        oPoints[0][0] = p0 + s0*roundCorner - vPoints[0][0];
+        oPoints[0][1] = p1 - s1 - vPoints[0][1];
+        oPoints[1][0] = p0 + s0 - vPoints[1][0];
+        oPoints[1][1] = p1 + s1*roundCorner - vPoints[1][1];
+        oPoints[2][0] = p0 - s0*roundCorner - vPoints[2][0];
+        oPoints[2][1] = p1 + s1 - vPoints[2][1];
+        oPoints[3][0] = p0 - s0 - vPoints[3][0];
+        oPoints[3][1] = p1 - s1*roundCorner - vPoints[3][1];
+    }else{
+        vPoints[0][0] = p0;
+        vPoints[0][1] = p1-s1;
+        vPoints[1][0] = p0 - s0;
+        vPoints[1][1] = p1;
+        vPoints[2][0] = p0;
+        vPoints[2][1] = p1+s1;
+        vPoints[3][0] = p0 + s0;
+        vPoints[3][1] = p1;
+        iPoints[0][0] = p0 + s0*cPoint - vPoints[0][0];
+        iPoints[0][1] = p1 - s1 - vPoints[0][1];
+        iPoints[1][0] = p0 - s0 - vPoints[1][0];
+        iPoints[1][1] = p1 - s1*cPoint - vPoints[1][1];
+        iPoints[2][0] = p0 - s0*cPoint - vPoints[2][0];
+        iPoints[2][1] = p1 + s1 - vPoints[2][1];
+        iPoints[3][0] = p0 + s0 - vPoints[3][0];
+        iPoints[3][1] = p1 + s1*cPoint - vPoints[3][1];
+        oPoints[0][0] = p0 - s0*cPoint - vPoints[0][0];
+        oPoints[0][1] = p1 - s1 - vPoints[0][1];
+        oPoints[1][0] = p0 - s0 - vPoints[1][0];
+        oPoints[1][1] = p1 + s1*cPoint - vPoints[1][1];
+        oPoints[2][0] = p0 + s0*cPoint - vPoints[2][0];
+        oPoints[2][1] = p1 + s1 - vPoints[2][1];
+        oPoints[3][0] = p0 + s0 - vPoints[3][0];
+        oPoints[3][1] = p1 - s1*cPoint - vPoints[3][1];
+    }
+	var pathObject = {
+		ks: {
+			a:0,
+			k: {
+				i:iPoints,
+				v:vPoints,
+				o:oPoints,
+				c: true
+			}
+		}
+	}
+	return pathObject;
+}
+
+function convertRectangleToPath(rectangleData) {
+	if(rectangleData.s.a !== 0 || rectangleData.p.a !== 0 || rectangleData.r.a !== 0) {
+		return null;
+	}
+
+
+	/*var p0 = this.p.v[0], p1 = this.p.v[1], v0 = this.s.v[0]/2, v1 = this.s.v[1]/2;
+    var round = bm_min(v0,v1,this.r.v);
+    var cPoint = round*(1-roundCorner);
+    this.v._length = 0;
+
+    if(this.d === 2 || this.d === 1) {
+        this.v.setTripleAt(p0+v0, p1-v1+round,p0+v0, p1-v1+round,p0+v0,p1-v1+cPoint,0, true);
+        this.v.setTripleAt(p0+v0, p1+v1-round,p0+v0, p1+v1-cPoint,p0+v0, p1+v1-round,1, true);
+        if(round!== 0){
+            this.v.setTripleAt(p0+v0-round, p1+v1,p0+v0-round,p1+v1,p0+v0-cPoint,p1+v1,2, true);
+            this.v.setTripleAt(p0-v0+round,p1+v1,p0-v0+cPoint,p1+v1,p0-v0+round,p1+v1,3, true);
+            this.v.setTripleAt(p0-v0,p1+v1-round,p0-v0,p1+v1-round,p0-v0,p1+v1-cPoint,4, true);
+            this.v.setTripleAt(p0-v0,p1-v1+round,p0-v0,p1-v1+cPoint,p0-v0,p1-v1+round,5, true);
+            this.v.setTripleAt(p0-v0+round,p1-v1,p0-v0+round,p1-v1,p0-v0+cPoint,p1-v1,6, true);
+            this.v.setTripleAt(p0+v0-round,p1-v1,p0+v0-cPoint,p1-v1,p0+v0-round,p1-v1,7, true);
+        } else {
+            this.v.setTripleAt(p0-v0,p1+v1,p0-v0+cPoint,p1+v1,p0-v0,p1+v1,2);
+            this.v.setTripleAt(p0-v0,p1-v1,p0-v0,p1-v1+cPoint,p0-v0,p1-v1,3);
+        }
+    }else{
+        this.v.setTripleAt(p0+v0,p1-v1+round,p0+v0,p1-v1+cPoint,p0+v0,p1-v1+round,0, true);
+        if(round!== 0){
+            this.v.setTripleAt(p0+v0-round,p1-v1,p0+v0-round,p1-v1,p0+v0-cPoint,p1-v1,1, true);
+            this.v.setTripleAt(p0-v0+round,p1-v1,p0-v0+cPoint,p1-v1,p0-v0+round,p1-v1,2, true);
+            this.v.setTripleAt(p0-v0,p1-v1+round,p0-v0,p1-v1+round,p0-v0,p1-v1+cPoint,3, true);
+            this.v.setTripleAt(p0-v0,p1+v1-round,p0-v0,p1+v1-cPoint,p0-v0,p1+v1-round,4, true);
+            this.v.setTripleAt(p0-v0+round,p1+v1,p0-v0+round,p1+v1,p0-v0+cPoint,p1+v1,5, true);
+            this.v.setTripleAt(p0+v0-round,p1+v1,p0+v0-cPoint,p1+v1,p0+v0-round,p1+v1,6, true);
+            this.v.setTripleAt(p0+v0,p1+v1-round,p0+v0,p1+v1-round,p0+v0,p1+v1-cPoint,7, true);
+        } else {
+            this.v.setTripleAt(p0-v0,p1-v1,p0-v0+cPoint,p1-v1,p0-v0,p1-v1,1, true);
+            this.v.setTripleAt(p0-v0,p1+v1,p0-v0,p1+v1-cPoint,p0-v0,p1+v1,2, true);
+            this.v.setTripleAt(p0+v0,p1+v1,p0+v0-cPoint,p1+v1,p0+v0,p1+v1,3, true);
+
+        }
+    }*/
+
+
+
+	var p0 = rectangleData.p.k[0], p1 = rectangleData.p.k[1], v0 = rectangleData.s.k[0]/2, v1 = rectangleData.s.k[1]/2; 
+    var round = Math.min(v0,v1,rectangleData.r.k);
+    var cPoint = round*(1-roundCorner);
+	var vPoints = [];
+	var oPoints = [];
+	var iPoints = [];
+	if(rectangleData.d === 2 || rectangleData.d === 1) {
+		vPoints[0] = [p0+v0, p1-v1+round];
+		oPoints[0] = [p0+v0 - vPoints[0][0], p1-v1+round - vPoints[0][1]];
+		iPoints[0] = [p0+v0 - vPoints[0][0], p1-v1+cPoint - vPoints[0][1]];
+		vPoints[1] = [p0+v0, p1+v1-round];
+		oPoints[1] = [p0+v0 - vPoints[1][0], p1+v1-cPoint - vPoints[1][1]];
+		iPoints[1] = [p0+v0 - vPoints[1][0], p1+v1-round - vPoints[1][1]];
+
+        if(round!== 0){
+			vPoints[2] = [p0+v0-round, p1+v1];
+			oPoints[2] = [p0+v0-round - vPoints[2][0], p1+v1 - vPoints[2][1]];
+			iPoints[2] = [p0+v0-cPoint - vPoints[2][0], p1+v1 - vPoints[2][1]];
+			vPoints[3] = [p0-v0+round, p1+v1];
+			oPoints[3] = [p0-v0+cPoint - vPoints[3][0], p1+v1 - vPoints[3][1]];
+			iPoints[3] = [p0-v0+round - vPoints[3][0], p1+v1 - vPoints[3][1]];
+			vPoints[4] = [p0-v0, p1+v1-round];
+			oPoints[4] = [p0-v0 - vPoints[4][0], p1+v1-round - vPoints[4][1]];
+			iPoints[4] = [p0-v0 - vPoints[4][0], p1+v1-cPoint - vPoints[4][1]];
+			vPoints[5] = [p0-v0, p1-v1+round];
+			oPoints[5] = [p0-v0 - vPoints[5][0], p1-v1+cPoint - vPoints[5][1]];
+			iPoints[5] = [p0-v0 - vPoints[5][0], p1-v1+round - vPoints[5][1]];
+			vPoints[6] = [p0-v0+round, p1-v1];
+			oPoints[6] = [p0-v0+round - vPoints[6][0], p1-v1 - vPoints[6][1]];
+			iPoints[6] = [p0-v0+cPoint - vPoints[6][0], p1-v1 - vPoints[6][1]];
+			vPoints[7] = [p0+v0-round, p1-v1];
+			oPoints[7] = [p0+v0-cPoint - vPoints[7][0], p1-v1 - vPoints[7][1]];
+			iPoints[7] = [p0+v0-round - vPoints[7][0], p1-v1 - vPoints[7][1]];
+        } else {
+			vPoints[2] = [p0-v0, p1+v1];
+			oPoints[2] = [p0-v0+cPoint - vPoints[2][0], p1+v1 - vPoints[2][1]];
+			iPoints[2] = [p0-v0 - vPoints[2][0], p1+v1 - vPoints[2][1]];
+			vPoints[3] = [p0-v0, p1-v1];
+			oPoints[3] = [p0-v0 - vPoints[3][0], p1-v1+cPoint - vPoints[3][1]];
+			iPoints[3] = [p0-v0 - vPoints[3][0], p1-v1 - vPoints[3][1]];
+        }
+    } else {
+		vPoints[0] = [p0+v0, p1-v1+round];
+		oPoints[0] = [p0+v0 - vPoints[0][0], p1-v1+cPoint - vPoints[0][1]];
+		iPoints[0] = [p0+v0 - vPoints[0][0], p1-v1+round - vPoints[0][1]];
+
+        if(round!== 0){
+			vPoints[1] = [p0+v0-round, p1-v1];
+			oPoints[1] = [p0+v0-round - vPoints[1][0], p1-v1 - vPoints[1][1]];
+			iPoints[1] = [p0+v0-cPoint - vPoints[1][0], p1-v1 - vPoints[1][1]];
+			vPoints[2] = [p0-v0+round, p1-v1];
+			oPoints[2] = [p0-v0+cPoint - vPoints[2][0], p1-v1 - vPoints[2][1]];
+			iPoints[2] = [p0-v0+round - vPoints[2][0], p1-v1 - vPoints[2][1]];
+			vPoints[3] = [p0-v0, p1-v1+round];
+			oPoints[3] = [p0-v0 - vPoints[3][0], p1-v1+round - vPoints[3][1]];
+			iPoints[3] = [p0-v0 - vPoints[3][0], p1-v1+cPoint - vPoints[3][1]];
+			vPoints[4] = [p0-v0, p1+v1-round];
+			oPoints[4] = [p0-v0 - vPoints[4][0], p1+v1-cPoint - vPoints[4][1]];
+			iPoints[4] = [p0-v0 - vPoints[4][0], p1+v1-round - vPoints[4][1]];
+			vPoints[5] = [p0-v0+round, p1+v1];
+			oPoints[5] = [p0-v0+round - vPoints[5][0], p1+v1 - vPoints[5][1]];
+			iPoints[5] = [p0-v0+cPoint - vPoints[5][0], p1+v1 - vPoints[5][1]];
+			vPoints[6] = [p0+v0-round, p1+v1];
+			oPoints[6] = [p0+v0-cPoint - vPoints[6][0], p1+v1 - vPoints[6][1]];
+			iPoints[6] = [p0+v0-round - vPoints[6][0], p1+v1 - vPoints[6][1]];
+			vPoints[7] = [p0+v0, p1+v1-round];
+			oPoints[7] = [p0+v0 - vPoints[7][0], p1+v1-round - vPoints[7][1]];
+			iPoints[7] = [p0+v0 - vPoints[7][0], p1+v1-cPoint - vPoints[7][1]];
+        } else {
+			vPoints[1] = [p0-v0, p1-v1];
+			oPoints[1] = [p0-v0+cPoint - vPoints[1][0], p1-v1 - vPoints[1][1]];
+			iPoints[1] = [p0-v0 - vPoints[1][0], p1-v1 - vPoints[1][1]];
+			vPoints[2] = [p0-v0, p1+v1];
+			oPoints[2] = [p0-v0 - vPoints[2][0], p1+v1-cPoint - vPoints[2][1]];
+			iPoints[2] = [p0-v0 - vPoints[2][0], p1+v1 - vPoints[2][1]];
+			vPoints[3] = [p0+v0, p1+v1];
+			oPoints[3] = [p0+v0-cPoint - vPoints[3][0], p1+v1 - vPoints[3][1]];
+			iPoints[3] = [p0+v0 - vPoints[3][0], p1+v1 - vPoints[3][1]];
+
+        }
+    }
+	var pathObject = {
+		ks: {
+			a:0,
+			k: {
+				i:iPoints,
+				v:vPoints,
+				o:oPoints,
+				c: true
+			}
+		}
+	}
+	return pathObject;
+}
 
 function drawable(_drawableData, _level, _timeOffset) {
 	var paths = [];
@@ -132,6 +346,26 @@ function drawable(_drawableData, _level, _timeOffset) {
 			return;
 		}
 		paths.push({path: path, transforms: transforms, level: level, trimPath: trimPath});
+	}
+	
+	function addEllipse(shapeData, transforms, level, trimPath) {
+		if (closed) {
+			return;
+		}
+		var pathConverted = convertEllipseToPath(shapeData);
+		if(pathConverted) {
+			paths.push({path: pathConverted, transforms: transforms, level: level, trimPath: trimPath});
+		}
+	}
+	
+	function addRectangle(shapeData, transforms, level, trimPath) {
+		if (closed) {
+			return;
+		}
+		var pathConverted = convertRectangleToPath(shapeData);
+		if(pathConverted) {
+			paths.push({path: pathConverted, transforms: transforms, level: level, trimPath: trimPath});
+		}
 	}
 
 	function canFlattenPath(transforms, level) {
@@ -318,6 +552,8 @@ function drawable(_drawableData, _level, _timeOffset) {
 
 	var factoryInstance = {
 		addPath: addPath,
+		addEllipse: addEllipse,
+		addRectangle: addRectangle,
 		exportDrawables: exportDrawables,
 		close: close
 	}

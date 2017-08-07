@@ -35,8 +35,18 @@ function shape(layerData, _level) {
 		}
 	}
 
-	function addEllipseToDrawables() {
-		
+	function addEllipseToDrawables(shapeData) {
+		var i, len = drawables.length;
+		for(i = 0; i < len; i += 1) {
+			drawables[i].addEllipse(shapeData, transforms, level, trimPath);
+		}
+	}
+
+	function addRectToDrawables(shapeData) {
+		var i, len = drawables.length;
+		for(i = 0; i < len; i += 1) {
+			drawables[i].addRectangle(shapeData, transforms, level, trimPath);
+		}
 	}
 
 	function processData() {
@@ -60,8 +70,9 @@ function shape(layerData, _level) {
 			} else if(state.shapes[i].ty === 'sh') {
 				addPathToDrawables(state.shapes[i]);
 			} else if(state.shapes[i].ty === 'el') {
-				console.log(state.shapes[i]);
-				//addEllipseToDrawables(state.shapes[i]);
+				addEllipseToDrawables(state.shapes[i]);
+			} else if(state.shapes[i].ty === 'rc') {
+				addRectToDrawables(state.shapes[i]);
 			} else if(state.shapes[i].ty === 'tm') {
 				trimPath = state.shapes[i];
 			} else {
