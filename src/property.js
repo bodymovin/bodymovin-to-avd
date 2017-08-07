@@ -34,6 +34,11 @@ function createAnimatedProperty(targetName, propertyType, keyframes, timeOffset)
 				node.nestChild(set, objectAnimator);
 			}
 			
+		} else if(propertyType === 'positionX' || propertyType === 'positionY') {
+			var propertyName = propertyType === 'positionX' ? 'translateX' : 'translateY';
+			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], propertyName, {type:'unidimensional', interpolationType:'unidimensional', timeOffset: timeOffset});
+			node.nestChild(set, objectAnimator);
+			
 		} else if(propertyType === 'anchor') {
 			objectAnimator = createAnimatorObject(keyframes[i - 1], keyframes[i], 'translateX', {type:'multidimensional', index:0, interpolationType:'unidimensional', multiplier:-1, timeOffset: timeOffset});
 			node.nestChild(set, objectAnimator);
