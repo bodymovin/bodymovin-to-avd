@@ -35,6 +35,10 @@ function shape(layerData, _level) {
 		}
 	}
 
+	function addEllipseToDrawables() {
+		
+	}
+
 	function processData() {
 		var i,  len = state.shapes.length;
 		var shapeGroup, drawable;
@@ -55,6 +59,9 @@ function shape(layerData, _level) {
 				transforms.push(state.shapes[i]);
 			} else if(state.shapes[i].ty === 'sh') {
 				addPathToDrawables(state.shapes[i]);
+			} else if(state.shapes[i].ty === 'el') {
+				console.log(state.shapes[i]);
+				//addEllipseToDrawables(state.shapes[i]);
 			} else if(state.shapes[i].ty === 'tm') {
 				trimPath = state.shapes[i];
 			} else {
