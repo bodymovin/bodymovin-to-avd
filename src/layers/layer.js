@@ -54,7 +54,7 @@ function layer(state) {
 		var animatedProp;
 		var timeCap = property.getTimeCap();
 		if(layerData.ip + state.timeOffset > 0 || layerData.op + state.timeOffset + parentWorkAreaOffset < timeCap) {
-			if(targets.getTargetByNameAndProperty(name,'scaleX') || targets.getTargetByNameAndProperty(name,'scaleY')) {
+			if(targets.getTargetByNameAndProperty(name,'scaleY')) {
 				name += naming.TIME_NAME;
 				var timeGroup = node.createNode('group', name);
 				node.nestChild(timeGroup, group);
@@ -62,12 +62,16 @@ function layer(state) {
 			}
 			var scaleX = (node.getAttribute(group, 'android:scaleX') || 1) * 100;
 			var scaleY = (node.getAttribute(group, 'android:scaleY') || 1) * 100;
-			if(layerData.ip + state.timeOffset > 0) {
-				animatedProp = property.createAnimatedProperty(name, 'scaleX', [{s:[0,0,100],e:[scaleX,scaleY,100],t:0},{t:0}], layerData.ip + state.timeOffset);
-				targets.addTarget(animatedProp);
-				
+			var clipStart = layerData.ip + state.timeOffset > 0;
+			var clipEnd = layerData.op + state.timeOffset + parentWorkAreaOffset < timeCap;
+			if(clipStart) {
+				node.addAttribute(group,'android:scaleY', 0);
 			}
-			if(layerData.op + state.timeOffset + parentWorkAreaOffset < timeCap) {
+			if(clipStart || clipEnd) {
+				animatedProp = property.createAnimatedProperty(name, 'scaleY', [{s:[0,0,100],e:[scaleX,scaleY,100],t:0},{t:0}], layerData.ip + state.timeOffset);
+				targets.addTarget(animatedProp);
+			}
+			if(clipEnd) {
 				animatedProp = property.createAnimatedProperty(name, 'scaleY', [{s:[scaleX,scaleY,100],e:[0,0,100],t:0},{t:0}], layerData.op + state.timeOffset + parentWorkAreaOffset);
 				targets.addTarget(animatedProp);
 			}
