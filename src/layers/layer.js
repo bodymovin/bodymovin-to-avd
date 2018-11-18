@@ -27,7 +27,7 @@ function layer(state) {
 		var gr;
 		if(masksGroup) {
 			gr = masksGroup;
-			var leaves = node.getLastLeaves(masksGroup);
+			var leaves = node.getLastLeaves(masksGroup, ['group']);
 			var i, len = leaves.length;
 			for(i = 0; i < len; i += 1) {
 				this.createNodeInstance(leaves[i], groupName + naming.GROUP_NAME + '_' + i);

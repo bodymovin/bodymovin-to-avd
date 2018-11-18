@@ -77,7 +77,7 @@ function getChildren(nodeElem) {
  	return children;
 }
 
- function getChild(nodeElem, childName) {
+function getChild(nodeElem, childName) {
  	var children = getChildren(nodeElem);
  	if(isArray(children)){
 	 	var i =0, len = children.length, tagName;
@@ -90,7 +90,7 @@ function getChildren(nodeElem) {
 	 	}
 	}
 	return '';
- }
+}
 
  function nestChild(nodeElem, nested) {
  	if(!nested) {
@@ -102,6 +102,18 @@ function getChildren(nodeElem) {
  		nodeElem[tagName] = [attrs];
  	}
  	nodeElem[tagName].push(nested);
+ }
+
+ function nestChildAt(nodeElem, nested, pos) {
+ 	if(!nested) {
+ 		return;
+ 	}
+ 	var tagName = getTagName(nodeElem);
+ 	if(!isArray(nodeElem[tagName])){
+ 		var attrs = nodeElem[tagName];
+ 		nodeElem[tagName] = [attrs];
+ 	}
+ 	nodeElem[tagName].splice(pos,0,nested);
  }
 
  function cloneNode(node, targets, suffix) {
@@ -144,7 +156,7 @@ function getChildren(nodeElem) {
  	return array[array.length - 1];
  }
 
- function getLastLeaves(node) {
+ function getLastLeaves(node, leaveTypes) {
  	var leaves = [];
  	var children = getChildren(node);
  	var hasChildren = false;
@@ -152,9 +164,9 @@ function getChildren(nodeElem) {
  		var i, len = children.length, tagName;
  		for(i = 0; i < len; i += 1) {
  			tagName = getTagName(children[i]);
- 			if (tagName !== '_attr') {
+ 			if (tagName !== '_attr' && (!leaveTypes || leaveTypes.indexOf(tagName) !== -1)) {
  				hasChildren = true;
- 				leaves = leaves.concat(getLastLeaves(children[i]));
+ 				leaves = leaves.concat(getLastLeaves(children[i], leaveTypes));
  			}
  		}
  	}
@@ -171,6 +183,7 @@ function getChildren(nodeElem) {
  	getTagName: getTagName,
  	getAttribute: getAttribute,
  	nestChild: nestChild,
+ 	nestChildAt: nestChildAt,
  	nestArray: nestArray,
  	getChild: getChild,
  	getChildren: getChildren,

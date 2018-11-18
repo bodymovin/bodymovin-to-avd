@@ -16,34 +16,49 @@ function masker(state) {
 	var clipPathString = '';
 	var masksList = [];
 
-	function buildMask(path) {
-		if(!path) {
-			return;
-		}
-		var clipPath = node.createNode('clip-path', clipName);
-		node.addAttribute(clipPath,'android:pathData', path);
-		if (currentMaskData.type === 'i') {
-			var i, len = masksList.length;
-			for (i = 0; i < len; i += 1) {
-				node.nestChild(clipPath, masksList[i]);
+	var buildMask = (function() {
+		var prevType = '';
+		return function(path) {
+			if(!path) {
+				return;
 			}
-			masksList.length = 0;
-		} else if (currentMaskData.type === 'a') {
-			if(masksList.length) {
-				var grouperContainer = node.createNode('group', clipName + naming.GROUP_NAME + maskCount);
-				node.nestChild(grouperContainer, masksList[masksList.length - 1]);
-				masksList[masksList.length - 1] = grouperContainer;
+			var groupContainerNode = node.createNode('group', clipName + naming.GROUP_NAME);
+			var clipPath = node.createNode('clip-path', clipName);
+			var groupNode = node.createNode('group', clipName + naming.GROUP_NAME + naming.GROUP_NAME);
+			node.nestChild(groupContainerNode, clipPath);
+			node.addAttribute(clipPath,'android:pathData', path);
+			if (currentMaskData.type === 'i') {
+				if(masksList.length) {
+					// We can add intersecting masks as siblings instead of nesting one inside the other
+					if (prevType === 'i') {
+						var currentContainer = masksList[masksList.length -1].container;
+						var index = node.getChildren(currentContainer).length - 1;
+						node.nestChildAt(currentContainer, clipPath, index);
+						groupContainerNode = currentContainer;
+					} else {
+						var i, len = masksList.length;
+						for(i = 0; i < len; i += 1) {
+							node.nestChild(groupContainerNode, masksList[i].container);
+						}
+					}
+					
+				} else {
+					node.nestChild(groupContainerNode, groupNode);
+				}
+				masksList.length = 0;
+			} else if (currentMaskData.type === 'a') {
+				node.nestChild(groupContainerNode, groupNode);
 			}
+			masksList.push({
+				container: groupContainerNode
+			})
+
+			animatedProp = null;
+			nestCount = 0;
+			clipPathString = '';
+			prevType = currentMaskData.type;
 		}
-		masksList.push(clipPath);
-
-		animatedProp = null;
-		nestCount = 0;
-		clipPathString = '';
-
-		return clipPath;
-
-	}
+	}())
 
 	function buildPreviousMaskGroup(name){
 		if(!currentMaskData.type){
@@ -93,16 +108,6 @@ function masker(state) {
 			}
 		}
 		buildMask(clipPathString);
-		/*maskNode = buildMask(clipPathString);
-		if(maskNode) {
-			if(prevNode) {
-				node.nestChild(maskNode, prevNode);
-			}
-			prevNode = maskNode;
-		}*/
-		//var grouperContainer = node.createNode('group', name + naming.GROUP_NAME + maskCount);
-		//node.nestChild(grouperContainer, prevNode);
-		//node.nestChild(containerGroup, grouperContainer);
 		currentMaskData.type = '';
 		currentMaskData.currentPaths.length = 0;
 		hasAnimatedProp = false;
@@ -110,7 +115,6 @@ function masker(state) {
 	}
 
 	function getMasks(name) {
-		var totalMasks = [];
 		var masksProperties = state.layerData.masksProperties;
 		if(masksProperties) {
 			var i, len = masksProperties.length, maskProp;
@@ -139,7 +143,9 @@ function masker(state) {
 			if(masksList.length) {
 				len = masksList.length;
 				for (i = 0; i < len; i += 1) {
-					node.nestChild(containerGroup, masksList[i]);
+					// node.nestChild(containerGroup, masksList[i].clip);
+					// node.nestChild(containerGroup, masksList[i].group);
+					node.nestChild(containerGroup, masksList[i].container);
 				}
 			}
 		}

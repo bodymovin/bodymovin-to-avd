@@ -9,6 +9,7 @@ var long_naming = {
 	ROOT_NAME: '_ROOT',
 	PARENT_NAME: '_PARENT',
 	CLIP_NAME: '_CLIP',
+	SOLID_NAME: '_SOLID',
 	TIME_NAME: '_TIME'
 }
 var short_naming = {
