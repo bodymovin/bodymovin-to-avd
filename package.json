@@ -4,7 +4,8 @@
   "description": "Bodymovin to AVD converter",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify src/index.js -o lib/build.js -t [ babelify --presets [ babel-preset-es2015 ] ]"
   },
   "repository": {
     "type": "git",
