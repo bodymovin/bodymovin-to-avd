@@ -150,10 +150,15 @@ function createTargetNode(nodeName) {
 	 			key: 'android:valueTo',
 	 			value: initialValue.s[options.index] * options.multiplier
 	 		})
- 		} else {
+ 		} else if('e' in initialValue) {
 	 		attributes.push({
 	 			key: 'android:valueTo',
 	 			value: initialValue.e[options.index] * options.multiplier
+	 		})
+ 		} else{
+	 		attributes.push({
+	 			key: 'android:valueTo',
+	 			value: finalValue.s[options.index] * options.multiplier
 	 		})
  		}
  		attributes.push({
@@ -170,10 +175,15 @@ function createTargetNode(nodeName) {
 	 			key: 'android:valueTo',
 	 			value: initialValue.s * options.multiplier
 	 		})
- 		} else {
+ 		} else if('e' in initialValue) {
 	 		attributes.push({
 	 			key: 'android:valueTo',
 	 			value: initialValue.e * options.multiplier
+	 		})
+ 		} else {
+ 			attributes.push({
+	 			key: 'android:valueTo',
+	 			value: finalValue.s * options.multiplier
 	 		})
  		}
  		attributes.push({
@@ -190,10 +200,15 @@ function createTargetNode(nodeName) {
 	 			key: 'android:valueTo',
 	 			value: options.staticPath + createPathData(initialValue.s[0], options.matrix)
 	 		})
- 		} else {
+ 		} else if('e' in initialValue) {
 	 		attributes.push({
 	 			key: 'android:valueTo',
 	 			value: options.staticPath + createPathData(initialValue.e[0], options.matrix)
+	 		})
+ 		} else {
+ 			attributes.push({
+	 			key: 'android:valueTo',
+	 			value: options.staticPath + createPathData(finalValue.s[0], options.matrix)
 	 		})
  		}
  		attributes.push({
@@ -210,10 +225,15 @@ function createTargetNode(nodeName) {
 	 			key: 'android:valueTo',
 	 			value: rgbHex(initialValue.s[0]*255, initialValue.s[1]*255, initialValue.s[2]*255)
 	 		})
- 		} else {
+ 		} else if('e' in initialValue) {
 	 		attributes.push({
 	 			key: 'android:valueTo',
 	 			value: rgbHex(initialValue.e[0]*255, initialValue.e[1]*255, initialValue.e[2]*255)
+	 		})
+ 		} else {
+ 			attributes.push({
+	 			key: 'android:valueTo',
+	 			value: rgbHex(finalValue.s[0]*255, finalValue.s[1]*255, finalValue.s[2]*255)
 	 		})
  		}
  		attributes.push({
@@ -229,10 +249,11 @@ function createTargetNode(nodeName) {
  			key: 'android:propertyYName',
  			value: 'translateY'
  		})
+ 		var endValue = ('e' in initialValue) ? initialValue.e : finalValue.s
  		var pathValue = 'M ' + initialValue.s[0] + ',' + initialValue.s[1];
  		pathValue += 'C ' + (initialValue.s[0] + initialValue.to[0]) + ',' + (initialValue.s[1]  + initialValue.to[1]);
- 		pathValue += ' ' + (initialValue.e[0] + initialValue.ti[0]) + ',' + (initialValue.e[1]  + initialValue.ti[1]);
- 		pathValue += ' ' + (initialValue.e[0]) + ',' + (initialValue.e[1]);
+ 		pathValue += ' ' + (endValue[0] + initialValue.ti[0]) + ',' + (endValue[1]  + initialValue.ti[1]);
+ 		pathValue += ' ' + (endValue[0]) + ',' + (endValue[1]);
  		attributes.push({
  			key: 'android:pathData',
  			value: pathValue

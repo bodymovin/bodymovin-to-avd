@@ -453,7 +453,8 @@ function drawable(_drawableData, _level, _timeOffset) {
 						if(value) { 
 							node.addAttribute(setChildren[j],'android:valueFrom', value + createPathData(pathData.path.ks.k[j - 1].s[0], matrix));
 							value = node.getAttribute(setChildren[j],'android:valueTo');
-							node.addAttribute(setChildren[j],'android:valueTo', value + createPathData(pathData.path.ks.k[j - 1].e[0], matrix));
+							var endValue = 'e' in pathData.path.ks.k[j - 1] ? pathData.path.ks.k[j - 1].e[0] : pathData.path.ks.k[j].s[0]
+							node.addAttribute(setChildren[j],'android:valueTo', value + createPathData(endValue, matrix));
 						}
 					}
 				} else {
