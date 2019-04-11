@@ -1,6 +1,6 @@
 {
   "name": "bodymovin-to-avd",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Bodymovin to AVD converter",
   "main": "src/index.js",
   "scripts": {
